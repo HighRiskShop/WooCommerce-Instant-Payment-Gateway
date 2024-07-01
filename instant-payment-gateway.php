@@ -3,7 +3,7 @@
  * Plugin Name: Instant Approval Payment Gateway with Instant Payouts
  * Plugin URI: https://www.highriskshop.com/instant-payment-gateway/
  * Description: Instant Approval High Risk Merchant Gateway with instant payouts to your USDT wallet.
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: HighRiskShop.COM
  * Author URI: https://www.highriskshop.com/
  * License: GPLv3
@@ -25,4 +25,6 @@ if (!defined('ABSPATH')) {
 		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-utorg.php'); // Include the payment gateway class
 		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-transfi.php'); // Include the payment gateway class
 		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-alchemypay.php'); // Include the payment gateway class
+		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-paybis.php'); // Include the payment gateway class
+		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-changenow.php'); // Include the payment gateway class
 ?>

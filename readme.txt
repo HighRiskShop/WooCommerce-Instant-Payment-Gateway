@@ -4,7 +4,7 @@ Donate link: http://www.highriskshop.com/
 Tags: woocommerce,payment,instant,gateway
 Requires at least: 3.8
 Tested up to: 6.5
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 Requires PHP: 5.2.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -66,6 +66,10 @@ Follow the guide to [Fix WooCommerce There Are No Payment Methods Available Erro
 = I have a problem with one of my orders? =
 
 Please contact HighRiskShop.com support team to guide you.
+
+= Are there any restricted businesses? =
+
+Anyone can use our payment plugin instantly without providing any information. However if your website category falls under our [prohibited business list](https://www.highriskshop.com/instant-payment-gateway/#prohibited) your domain will be blocked.
 
 == Screenshots ==
 
