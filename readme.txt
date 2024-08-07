@@ -3,8 +3,8 @@ Contributors: highriskshop
 Donate link: http://www.highriskshop.com/
 Tags: woocommerce,payment,instant,gateway
 Requires at least: 3.8
-Tested up to: 6.5
-Stable tag: 1.0.4
+Tested up to: 6.6
+Stable tag: 1.0.5
 Requires PHP: 5.2.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -67,6 +67,10 @@ Follow the guide to [Fix WooCommerce There Are No Payment Methods Available Erro
 
 Please contact HighRiskShop.com support team to guide you.
 
+= I'm receiving payments to my wallet but orders are still pending payment? =
+
+Our plugin is tested to mark orders as processing automatically after payment. You can follow our [guide for fixing common payment gateway issues](https://www.highriskshop.com/woocommerce-payment-gateway-troubleshooting/).
+
 = Are there any restricted businesses? =
 
 Anyone can use our payment plugin instantly without providing any information. However if your website category falls under our [prohibited business list](https://www.highriskshop.com/instant-payment-gateway/#prohibited) your domain will be blocked.
@@ -78,9 +82,31 @@ Anyone can use our payment plugin instantly without providing any information. H
 
 == Changelog ==
 
-* Instant approval payment gateway.
-* Instant payouts.
+= V1.0.5 =
+
+* Adding a paid amount check logic for providers with unlocked amounts on the checkout page.
+
+= V1.0.4 July 4, 2024 =
+
+* USDC Payouts
+
+= V1.0.3 July 1, 2024 =
+
+* New payment providers
+
+= V1.0.2 May 15, 2024 =
+
+* Fix USD conversion
+
+= V1.0.1 May 13, 2024 =
+
+* New payment providers
+
+= V1.0.0 May 8, 2024 =
+
+* Initial release
+
 
 == Upgrade Notice ==
 
-Checkout new plugin features.
+Checkout new plugin features. Always make sure to insert your payout wallet for active gateways.

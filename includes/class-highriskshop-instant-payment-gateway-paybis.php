@@ -77,6 +77,32 @@ class HighRiskShop_Instant_Payment_Gateway_Paybis extends WC_Payment_Gateway {
 		$highriskshopgateway_paybiscom_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $highriskshopgateway_paybiscom_nonce,), rest_url('highriskshopgateway/v1/highriskshopgateway-paybiscom/'));
 		$highriskshopgateway_paybiscom_email = urlencode(sanitize_email($order->get_billing_email()));
 		$highriskshopgateway_paybiscom_final_total = $highriskshopgateway_paybiscom_total;
+		
+		if ($highriskshopgateway_paybiscom_currency === 'USD') {
+		$highriskshopgateway_paybiscom_reference_total = (float)$highriskshopgateway_paybiscom_final_total;
+		} else {
+		
+$highriskshopgateway_paybiscom_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_paybiscom_total . '&from=' . strtolower($highriskshopgateway_paybiscom_currency));
+
+if (is_wp_error($highriskshopgateway_paybiscom_response)) {
+    // Handle error
+    wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed due to failed currency conversion process, please try again', 'hrspaybiscom'), 'error');
+    return null;
+} else {
+
+$highriskshopgateway_paybiscom_body = wp_remote_retrieve_body($highriskshopgateway_paybiscom_response);
+$highriskshopgateway_paybiscom_conversion_resp = json_decode($highriskshopgateway_paybiscom_body, true);
+
+if ($highriskshopgateway_paybiscom_conversion_resp && isset($highriskshopgateway_paybiscom_conversion_resp['value_coin'])) {
+    // Escape output
+    $highriskshopgateway_paybiscom_finalusd_total	= sanitize_text_field($highriskshopgateway_paybiscom_conversion_resp['value_coin']);
+    $highriskshopgateway_paybiscom_reference_total = (float)$highriskshopgateway_paybiscom_finalusd_total;	
+} else {
+    wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (unsupported store currency)', 'hrspaybiscom'), 'error');
+    return null;
+}	
+		}
+		}
 	
 $highriskshopgateway_paybiscom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->paybiscom_wallet_address .'&callback=' . urlencode($highriskshopgateway_paybiscom_callback));
 
@@ -99,6 +125,7 @@ if (is_wp_error($highriskshopgateway_paybiscom_gen_wallet)) {
     $order->update_meta_data('highriskshop_paybiscom_polygon_temporary_order_wallet_address', $highriskshopgateway_paybiscom_gen_polygon_addressIn);
     $order->update_meta_data('highriskshop_paybiscom_callback', $highriskshopgateway_paybiscom_gen_callback);
 	$order->update_meta_data('highriskshop_paybiscom_converted_amount', $highriskshopgateway_paybiscom_final_total);
+	$order->update_meta_data('highriskshop_paybiscom_expected_amount', $highriskshopgateway_paybiscom_reference_total);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (wallet address error)', 'paybiscom'), 'error');
@@ -138,6 +165,8 @@ add_action( 'rest_api_init', 'highriskshopgateway_paybiscom_change_order_status_
 function highriskshopgateway_paybiscom_change_order_status_callback( $request ) {
     $order_id = absint($request->get_param( 'order_id' ));
 	$highriskshopgateway_paybiscomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
+	$highriskshopgateway_paybiscompaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
+	$highriskshopgateway_paybiscomfloatpaid_value_coin = (float)$highriskshopgateway_paybiscompaid_value_coin;
 	
 	 // Verify nonce
     if ( empty( $highriskshopgateway_paybiscomgetnonce ) || ! wp_verify_nonce( $highriskshopgateway_paybiscomgetnonce, 'highriskshopgateway_paybiscom_nonce_' . $order_id ) ) {
@@ -159,11 +188,21 @@ function highriskshopgateway_paybiscom_change_order_status_callback( $request ) 
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-paybis'
     if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-paybis' === $order->get_payment_method() ) {
+	$highriskshopgateway_paybiscomexpected_amount = (float)$order->get_meta('highriskshop_paybiscom_expected_amount');
+	$highriskshopgateway_paybiscomthreshold = 0.80 * $highriskshopgateway_paybiscomexpected_amount;
+		if ( $highriskshopgateway_paybiscomfloatpaid_value_coin < $highriskshopgateway_paybiscomthreshold ) {
+			// Mark the order as failed and add an order note
+            $order->update_status('failed', __( 'Payment received is less than 80% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-paybis' ));
+            $order->add_order_note( __( 'Order marked as failed: Payment received is less than 80% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-paybis' ) );
+            return array( 'message' => 'Order status changed to failed due to partial payment.' );
+			
+		} else {
         // Change order status to processing
 		 $order->payment_complete();
         $order->update_status( 'processing' );
         // Return success response
         return array( 'message' => 'Order status changed to processing.' );
+	}
     } else {
         // Return error response if conditions are not met
         return new WP_Error( 'order_not_eligible', __( 'Order is not eligible for status change.', 'highriskshop-instant-payment-gateway-paybis' ), array( 'status' => 400 ) );

@@ -78,6 +78,7 @@ class HighRiskShop_Instant_Payment_Gateway_Wert extends WC_Payment_Gateway {
 		
 		if ($highriskshopgateway_wertio_currency === 'USD') {
         $highriskshopgateway_wertio_final_total = $highriskshopgateway_wertio_total;
+		$highriskshopgateway_wertio_reference_total = (float)$highriskshopgateway_wertio_final_total;
 		} else {
 		
 $highriskshopgateway_wertio_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_wertio_total . '&from=' . strtolower($highriskshopgateway_wertio_currency));
@@ -93,7 +94,8 @@ $highriskshopgateway_wertio_conversion_resp = json_decode($highriskshopgateway_w
 
 if ($highriskshopgateway_wertio_conversion_resp && isset($highriskshopgateway_wertio_conversion_resp['value_coin'])) {
     // Escape output
-    $highriskshopgateway_wertio_final_total	= sanitize_text_field($highriskshopgateway_wertio_conversion_resp['value_coin']);      
+    $highriskshopgateway_wertio_final_total	= sanitize_text_field($highriskshopgateway_wertio_conversion_resp['value_coin']);
+    $highriskshopgateway_wertio_reference_total = (float)$highriskshopgateway_wertio_final_total;	
 } else {
     wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (unsupported store currency)', 'hrswertio'), 'error');
     return null;
@@ -121,6 +123,7 @@ if (is_wp_error($highriskshopgateway_wertio_gen_wallet)) {
     $order->update_meta_data('highriskshop_wertio_polygon_temporary_order_wallet_address', $highriskshopgateway_wertio_gen_polygon_addressIn);
     $order->update_meta_data('highriskshop_wertio_callback', $highriskshopgateway_wertio_gen_callback);
 	$order->update_meta_data('highriskshop_wertio_converted_amount', $highriskshopgateway_wertio_final_total);
+	$order->update_meta_data('highriskshop_wertio_expected_amount', $highriskshopgateway_wertio_reference_total);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (wallet address error)', 'wertio'), 'error');
@@ -160,6 +163,8 @@ add_action( 'rest_api_init', 'highriskshopgateway_wertio_change_order_status_res
 function highriskshopgateway_wertio_change_order_status_callback( $request ) {
     $order_id = absint($request->get_param( 'order_id' ));
 	$highriskshopgateway_wertiogetnonce = sanitize_text_field($request->get_param( 'nonce' ));
+	$highriskshopgateway_wertiopaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
+	$highriskshopgateway_wertiofloatpaid_value_coin = (float)$highriskshopgateway_wertiopaid_value_coin;
 	
 	 // Verify nonce
     if ( empty( $highriskshopgateway_wertiogetnonce ) || ! wp_verify_nonce( $highriskshopgateway_wertiogetnonce, 'highriskshopgateway_wertio_nonce_' . $order_id ) ) {
@@ -181,11 +186,21 @@ function highriskshopgateway_wertio_change_order_status_callback( $request ) {
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-wert'
     if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-wert' === $order->get_payment_method() ) {
+	$highriskshopgateway_wertioexpected_amount = (float)$order->get_meta('highriskshop_wertio_expected_amount');
+	$highriskshopgateway_wertiothreshold = 0.80 * $highriskshopgateway_wertioexpected_amount;
+		if ( $highriskshopgateway_wertiofloatpaid_value_coin < $highriskshopgateway_wertiothreshold ) {
+			// Mark the order as failed and add an order note
+            $order->update_status('failed', __( 'Payment received is less than 80% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-wert' ));
+            $order->add_order_note( __( 'Order marked as failed: Payment received is less than 80% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-wert' ) );
+            return array( 'message' => 'Order status changed to failed due to partial payment.' );
+			
+		} else {
         // Change order status to processing
 		 $order->payment_complete();
         $order->update_status( 'processing' );
         // Return success response
         return array( 'message' => 'Order status changed to processing.' );
+		}
     } else {
         // Return error response if conditions are not met
         return new WP_Error( 'order_not_eligible', __( 'Order is not eligible for status change.', 'highriskshop-instant-payment-gateway-wert' ), array( 'status' => 400 ) );

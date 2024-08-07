@@ -77,6 +77,32 @@ class HighRiskShop_Instant_Payment_Gateway_Changenow extends WC_Payment_Gateway 
 		$highriskshopgateway_changenowio_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $highriskshopgateway_changenowio_nonce,), rest_url('highriskshopgateway/v1/highriskshopgateway-changenowio/'));
 		$highriskshopgateway_changenowio_email = urlencode(sanitize_email($order->get_billing_email()));
 		$highriskshopgateway_changenowio_final_total = $highriskshopgateway_changenowio_total;
+		
+		if ($highriskshopgateway_changenowio_currency === 'USD') {
+		$highriskshopgateway_changenowio_reference_total = (float)$highriskshopgateway_changenowio_final_total;
+		} else {
+		
+$highriskshopgateway_changenowio_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_changenowio_total . '&from=' . strtolower($highriskshopgateway_changenowio_currency));
+
+if (is_wp_error($highriskshopgateway_changenowio_response)) {
+    // Handle error
+    wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed due to failed currency conversion process, please try again', 'hrschangenowio'), 'error');
+    return null;
+} else {
+
+$highriskshopgateway_changenowio_body = wp_remote_retrieve_body($highriskshopgateway_changenowio_response);
+$highriskshopgateway_changenowio_conversion_resp = json_decode($highriskshopgateway_changenowio_body, true);
+
+if ($highriskshopgateway_changenowio_conversion_resp && isset($highriskshopgateway_changenowio_conversion_resp['value_coin'])) {
+    // Escape output
+    $highriskshopgateway_changenowio_finalusd_total	= sanitize_text_field($highriskshopgateway_changenowio_conversion_resp['value_coin']);
+    $highriskshopgateway_changenowio_reference_total = (float)$highriskshopgateway_changenowio_finalusd_total;	
+} else {
+    wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (unsupported store currency)', 'hrschangenowio'), 'error');
+    return null;
+}	
+		}
+		}
 	
 $highriskshopgateway_changenowio_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->changenowio_wallet_address .'&callback=' . urlencode($highriskshopgateway_changenowio_callback));
 
@@ -99,6 +125,7 @@ if (is_wp_error($highriskshopgateway_changenowio_gen_wallet)) {
     $order->update_meta_data('highriskshop_changenowio_polygon_temporary_order_wallet_address', $highriskshopgateway_changenowio_gen_polygon_addressIn);
     $order->update_meta_data('highriskshop_changenowio_callback', $highriskshopgateway_changenowio_gen_callback);
 	$order->update_meta_data('highriskshop_changenowio_converted_amount', $highriskshopgateway_changenowio_final_total);
+	$order->update_meta_data('highriskshop_changenowio_expected_amount', $highriskshopgateway_changenowio_reference_total);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (wallet address error)', 'changenowio'), 'error');
@@ -138,6 +165,8 @@ add_action( 'rest_api_init', 'highriskshopgateway_changenowio_change_order_statu
 function highriskshopgateway_changenowio_change_order_status_callback( $request ) {
     $order_id = absint($request->get_param( 'order_id' ));
 	$highriskshopgateway_changenowiogetnonce = sanitize_text_field($request->get_param( 'nonce' ));
+	$highriskshopgateway_changenowiopaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
+	$highriskshopgateway_changenowiofloatpaid_value_coin = (float)$highriskshopgateway_changenowiopaid_value_coin;
 	
 	 // Verify nonce
     if ( empty( $highriskshopgateway_changenowiogetnonce ) || ! wp_verify_nonce( $highriskshopgateway_changenowiogetnonce, 'highriskshopgateway_changenowio_nonce_' . $order_id ) ) {
@@ -159,11 +188,21 @@ function highriskshopgateway_changenowio_change_order_status_callback( $request 
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-changenow'
     if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-changenow' === $order->get_payment_method() ) {
+	$highriskshopgateway_changenowioexpected_amount = (float)$order->get_meta('highriskshop_changenowio_expected_amount');
+	$highriskshopgateway_changenowiothreshold = 0.80 * $highriskshopgateway_changenowioexpected_amount;
+		if ( $highriskshopgateway_changenowiofloatpaid_value_coin < $highriskshopgateway_changenowiothreshold ) {
+			// Mark the order as failed and add an order note
+            $order->update_status('failed', __( 'Payment received is less than 80% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-changenow' ));
+            $order->add_order_note( __( 'Order marked as failed: Payment received is less than 80% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-changenow' ) );
+            return array( 'message' => 'Order status changed to failed due to partial payment.' );
+			
+		} else {
         // Change order status to processing
 		 $order->payment_complete();
         $order->update_status( 'processing' );
         // Return success response
         return array( 'message' => 'Order status changed to processing.' );
+	}
     } else {
         // Return error response if conditions are not met
         return new WP_Error( 'order_not_eligible', __( 'Order is not eligible for status change.', 'highriskshop-instant-payment-gateway-changenow' ), array( 'status' => 400 ) );
