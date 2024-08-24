@@ -117,10 +117,11 @@ if (is_wp_error($highriskshopgateway_transficom_gen_wallet)) {
         $highriskshopgateway_transficom_gen_polygon_addressIn = sanitize_text_field($highriskshopgateway_transficom_wallet_decbody['polygon_address_in']);
 		$highriskshopgateway_transficom_gen_callback = sanitize_url($highriskshopgateway_transficom_wallet_decbody['callback_url']);
 		// Save $transficomresponse in order meta data
-    $order->update_meta_data('highriskshop_transficom_tracking_address', $highriskshopgateway_transficom_gen_addressIn);
-    $order->update_meta_data('highriskshop_transficom_polygon_temporary_order_wallet_address', $highriskshopgateway_transficom_gen_polygon_addressIn);
-    $order->update_meta_data('highriskshop_transficom_callback', $highriskshopgateway_transficom_gen_callback);
-	$order->update_meta_data('highriskshop_transficom_converted_amount', $highriskshopgateway_transficom_final_total);
+    $order->add_meta_data('highriskshop_transficom_tracking_address', $highriskshopgateway_transficom_gen_addressIn, true);
+    $order->add_meta_data('highriskshop_transficom_polygon_temporary_order_wallet_address', $highriskshopgateway_transficom_gen_polygon_addressIn, true);
+    $order->add_meta_data('highriskshop_transficom_callback', $highriskshopgateway_transficom_gen_callback, true);
+	$order->add_meta_data('highriskshop_transficom_converted_amount', $highriskshopgateway_transficom_final_total, true);
+	$order->add_meta_data('highriskshop_transficom_nonce', $highriskshopgateway_transficom_nonce, true);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (wallet address error)', 'transficom'), 'error');
@@ -160,11 +161,6 @@ add_action( 'rest_api_init', 'highriskshopgateway_transficom_change_order_status
 function highriskshopgateway_transficom_change_order_status_callback( $request ) {
     $order_id = absint($request->get_param( 'order_id' ));
 	$highriskshopgateway_transficomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
-	
-	 // Verify nonce
-    if ( empty( $highriskshopgateway_transficomgetnonce ) || ! wp_verify_nonce( $highriskshopgateway_transficomgetnonce, 'highriskshopgateway_transficom_nonce_' . $order_id ) ) {
-        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-transfi' ), array( 'status' => 403 ) );
-    }
 
     // Check if order ID parameter exists
     if ( empty( $order_id ) ) {
@@ -177,6 +173,11 @@ function highriskshopgateway_transficom_change_order_status_callback( $request )
     // Check if order exists
     if ( ! $order ) {
         return new WP_Error( 'invalid_order', __( 'Invalid order ID.', 'highriskshop-instant-payment-gateway-transfi' ), array( 'status' => 404 ) );
+    }
+	
+	// Verify nonce
+    if ( empty( $highriskshopgateway_transficomgetnonce ) || $order->get_meta('highriskshop_transficom_nonce', true) !== $highriskshopgateway_transficomgetnonce ) {
+        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-transfi' ), array( 'status' => 403 ) );
     }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-transfi'

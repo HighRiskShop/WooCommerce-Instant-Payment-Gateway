@@ -119,11 +119,12 @@ if (is_wp_error($highriskshopgateway_rampnetwork_gen_wallet)) {
         $highriskshopgateway_rampnetwork_gen_polygon_addressIn = sanitize_text_field($highriskshopgateway_rampnetwork_wallet_decbody['polygon_address_in']);
 		$highriskshopgateway_rampnetwork_gen_callback = sanitize_url($highriskshopgateway_rampnetwork_wallet_decbody['callback_url']);
 		// Save $rampnetworkresponse in order meta data
-    $order->update_meta_data('highriskshop_rampnetwork_tracking_address', $highriskshopgateway_rampnetwork_gen_addressIn);
-    $order->update_meta_data('highriskshop_rampnetwork_polygon_temporary_order_wallet_address', $highriskshopgateway_rampnetwork_gen_polygon_addressIn);
-    $order->update_meta_data('highriskshop_rampnetwork_callback', $highriskshopgateway_rampnetwork_gen_callback);
-	$order->update_meta_data('highriskshop_rampnetwork_converted_amount', $highriskshopgateway_rampnetwork_final_total);
-	$order->update_meta_data('highriskshop_rampnetwork_expected_amount', $highriskshopgateway_rampnetwork_reference_total);
+    $order->add_meta_data('highriskshop_rampnetwork_tracking_address', $highriskshopgateway_rampnetwork_gen_addressIn, true);
+    $order->add_meta_data('highriskshop_rampnetwork_polygon_temporary_order_wallet_address', $highriskshopgateway_rampnetwork_gen_polygon_addressIn, true);
+    $order->add_meta_data('highriskshop_rampnetwork_callback', $highriskshopgateway_rampnetwork_gen_callback, true);
+	$order->add_meta_data('highriskshop_rampnetwork_converted_amount', $highriskshopgateway_rampnetwork_final_total, true);
+	$order->add_meta_data('highriskshop_rampnetwork_expected_amount', $highriskshopgateway_rampnetwork_reference_total, true);
+	$order->add_meta_data('highriskshop_rampnetwork_nonce', $highriskshopgateway_rampnetwork_nonce, true);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (wallet address error)', 'rampnetwork'), 'error');
@@ -165,11 +166,6 @@ function highriskshopgateway_rampnetwork_change_order_status_callback( $request 
 	$highriskshopgateway_rampnetworkgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
 	$highriskshopgateway_rampnetworkpaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
 	$highriskshopgateway_rampnetworkfloatpaid_value_coin = (float)$highriskshopgateway_rampnetworkpaid_value_coin;
-	
-	 // Verify nonce
-    if ( empty( $highriskshopgateway_rampnetworkgetnonce ) || ! wp_verify_nonce( $highriskshopgateway_rampnetworkgetnonce, 'highriskshopgateway_rampnetwork_nonce_' . $order_id ) ) {
-        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-rampnetwork' ), array( 'status' => 403 ) );
-    }
 
     // Check if order ID parameter exists
     if ( empty( $order_id ) ) {
@@ -183,10 +179,15 @@ function highriskshopgateway_rampnetwork_change_order_status_callback( $request 
     if ( ! $order ) {
         return new WP_Error( 'invalid_order', __( 'Invalid order ID.', 'highriskshop-instant-payment-gateway-rampnetwork' ), array( 'status' => 404 ) );
     }
+	
+	// Verify nonce
+    if ( empty( $highriskshopgateway_rampnetworkgetnonce ) || $order->get_meta('highriskshop_rampnetwork_nonce', true) !== $highriskshopgateway_rampnetworkgetnonce ) {
+        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-rampnetwork' ), array( 'status' => 403 ) );
+    }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-rampnetwork'
     if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-rampnetwork' === $order->get_payment_method() ) {
-			$highriskshopgateway_rampnetworkexpected_amount = (float)$order->get_meta('highriskshop_rampnetwork_expected_amount');
+			$highriskshopgateway_rampnetworkexpected_amount = (float)$order->get_meta('highriskshop_rampnetwork_expected_amount', true);
 	$highriskshopgateway_rampnetworkthreshold = 0.80 * $highriskshopgateway_rampnetworkexpected_amount;
 		if ( $highriskshopgateway_rampnetworkfloatpaid_value_coin < $highriskshopgateway_rampnetworkthreshold ) {
 			// Mark the order as failed and add an order note

@@ -119,11 +119,12 @@ if (is_wp_error($highriskshopgateway_wertio_gen_wallet)) {
         $highriskshopgateway_wertio_gen_polygon_addressIn = sanitize_text_field($highriskshopgateway_wertio_wallet_decbody['polygon_address_in']);
 		$highriskshopgateway_wertio_gen_callback = sanitize_url($highriskshopgateway_wertio_wallet_decbody['callback_url']);
 		// Save $wertioresponse in order meta data
-    $order->update_meta_data('highriskshop_wertio_tracking_address', $highriskshopgateway_wertio_gen_addressIn);
-    $order->update_meta_data('highriskshop_wertio_polygon_temporary_order_wallet_address', $highriskshopgateway_wertio_gen_polygon_addressIn);
-    $order->update_meta_data('highriskshop_wertio_callback', $highriskshopgateway_wertio_gen_callback);
-	$order->update_meta_data('highriskshop_wertio_converted_amount', $highriskshopgateway_wertio_final_total);
-	$order->update_meta_data('highriskshop_wertio_expected_amount', $highriskshopgateway_wertio_reference_total);
+    $order->add_meta_data('highriskshop_wertio_tracking_address', $highriskshopgateway_wertio_gen_addressIn, true);
+    $order->add_meta_data('highriskshop_wertio_polygon_temporary_order_wallet_address', $highriskshopgateway_wertio_gen_polygon_addressIn, true);
+    $order->add_meta_data('highriskshop_wertio_callback', $highriskshopgateway_wertio_gen_callback, true);
+	$order->add_meta_data('highriskshop_wertio_converted_amount', $highriskshopgateway_wertio_final_total, true);
+	$order->add_meta_data('highriskshop_wertio_expected_amount', $highriskshopgateway_wertio_reference_total, true);
+	$order->add_meta_data('highriskshop_wertio_nonce', $highriskshopgateway_wertio_nonce, true);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (wallet address error)', 'wertio'), 'error');
@@ -165,11 +166,6 @@ function highriskshopgateway_wertio_change_order_status_callback( $request ) {
 	$highriskshopgateway_wertiogetnonce = sanitize_text_field($request->get_param( 'nonce' ));
 	$highriskshopgateway_wertiopaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
 	$highriskshopgateway_wertiofloatpaid_value_coin = (float)$highriskshopgateway_wertiopaid_value_coin;
-	
-	 // Verify nonce
-    if ( empty( $highriskshopgateway_wertiogetnonce ) || ! wp_verify_nonce( $highriskshopgateway_wertiogetnonce, 'highriskshopgateway_wertio_nonce_' . $order_id ) ) {
-        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-wert' ), array( 'status' => 403 ) );
-    }
 
     // Check if order ID parameter exists
     if ( empty( $order_id ) ) {
@@ -183,10 +179,15 @@ function highriskshopgateway_wertio_change_order_status_callback( $request ) {
     if ( ! $order ) {
         return new WP_Error( 'invalid_order', __( 'Invalid order ID.', 'highriskshop-instant-payment-gateway-wert' ), array( 'status' => 404 ) );
     }
+	
+	// Verify nonce
+    if ( empty( $highriskshopgateway_wertiogetnonce ) || $order->get_meta('highriskshop_wertio_nonce', true) !== $highriskshopgateway_wertiogetnonce ) {
+        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-wert' ), array( 'status' => 403 ) );
+    }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-wert'
     if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-wert' === $order->get_payment_method() ) {
-	$highriskshopgateway_wertioexpected_amount = (float)$order->get_meta('highriskshop_wertio_expected_amount');
+	$highriskshopgateway_wertioexpected_amount = (float)$order->get_meta('highriskshop_wertio_expected_amount', true);
 	$highriskshopgateway_wertiothreshold = 0.80 * $highriskshopgateway_wertioexpected_amount;
 		if ( $highriskshopgateway_wertiofloatpaid_value_coin < $highriskshopgateway_wertiothreshold ) {
 			// Mark the order as failed and add an order note

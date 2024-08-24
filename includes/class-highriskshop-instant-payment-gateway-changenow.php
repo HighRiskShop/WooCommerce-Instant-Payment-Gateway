@@ -121,11 +121,12 @@ if (is_wp_error($highriskshopgateway_changenowio_gen_wallet)) {
         $highriskshopgateway_changenowio_gen_polygon_addressIn = sanitize_text_field($highriskshopgateway_changenowio_wallet_decbody['polygon_address_in']);
 		$highriskshopgateway_changenowio_gen_callback = sanitize_url($highriskshopgateway_changenowio_wallet_decbody['callback_url']);
 		// Save $changenowioresponse in order meta data
-    $order->update_meta_data('highriskshop_changenowio_tracking_address', $highriskshopgateway_changenowio_gen_addressIn);
-    $order->update_meta_data('highriskshop_changenowio_polygon_temporary_order_wallet_address', $highriskshopgateway_changenowio_gen_polygon_addressIn);
-    $order->update_meta_data('highriskshop_changenowio_callback', $highriskshopgateway_changenowio_gen_callback);
-	$order->update_meta_data('highriskshop_changenowio_converted_amount', $highriskshopgateway_changenowio_final_total);
-	$order->update_meta_data('highriskshop_changenowio_expected_amount', $highriskshopgateway_changenowio_reference_total);
+    $order->add_meta_data('highriskshop_changenowio_tracking_address', $highriskshopgateway_changenowio_gen_addressIn, true);
+    $order->add_meta_data('highriskshop_changenowio_polygon_temporary_order_wallet_address', $highriskshopgateway_changenowio_gen_polygon_addressIn, true);
+    $order->add_meta_data('highriskshop_changenowio_callback', $highriskshopgateway_changenowio_gen_callback, true);
+	$order->add_meta_data('highriskshop_changenowio_converted_amount', $highriskshopgateway_changenowio_final_total, true);
+	$order->add_meta_data('highriskshop_changenowio_expected_amount', $highriskshopgateway_changenowio_reference_total, true);
+	$order->add_meta_data('highriskshop_changenowio_nonce', $highriskshopgateway_changenowio_nonce, true);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (wallet address error)', 'changenowio'), 'error');
@@ -167,11 +168,6 @@ function highriskshopgateway_changenowio_change_order_status_callback( $request 
 	$highriskshopgateway_changenowiogetnonce = sanitize_text_field($request->get_param( 'nonce' ));
 	$highriskshopgateway_changenowiopaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
 	$highriskshopgateway_changenowiofloatpaid_value_coin = (float)$highriskshopgateway_changenowiopaid_value_coin;
-	
-	 // Verify nonce
-    if ( empty( $highriskshopgateway_changenowiogetnonce ) || ! wp_verify_nonce( $highriskshopgateway_changenowiogetnonce, 'highriskshopgateway_changenowio_nonce_' . $order_id ) ) {
-        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-changenow' ), array( 'status' => 403 ) );
-    }
 
     // Check if order ID parameter exists
     if ( empty( $order_id ) ) {
@@ -185,10 +181,15 @@ function highriskshopgateway_changenowio_change_order_status_callback( $request 
     if ( ! $order ) {
         return new WP_Error( 'invalid_order', __( 'Invalid order ID.', 'highriskshop-instant-payment-gateway-changenow' ), array( 'status' => 404 ) );
     }
+	
+	// Verify nonce
+    if ( empty( $highriskshopgateway_changenowiogetnonce ) || $order->get_meta('highriskshop_changenowio_nonce', true) !== $highriskshopgateway_changenowiogetnonce ) {
+        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-changenow' ), array( 'status' => 403 ) );
+    }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-changenow'
     if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-changenow' === $order->get_payment_method() ) {
-	$highriskshopgateway_changenowioexpected_amount = (float)$order->get_meta('highriskshop_changenowio_expected_amount');
+	$highriskshopgateway_changenowioexpected_amount = (float)$order->get_meta('highriskshop_changenowio_expected_amount', true);
 	$highriskshopgateway_changenowiothreshold = 0.80 * $highriskshopgateway_changenowioexpected_amount;
 		if ( $highriskshopgateway_changenowiofloatpaid_value_coin < $highriskshopgateway_changenowiothreshold ) {
 			// Mark the order as failed and add an order note

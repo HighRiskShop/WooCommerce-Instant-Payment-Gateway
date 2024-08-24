@@ -2,10 +2,12 @@
 Contributors: highriskshop
 Donate link: http://www.highriskshop.com/
 Tags: woocommerce,payment,instant,gateway
-Requires at least: 3.8
-Tested up to: 6.6
-Stable tag: 1.0.5
-Requires PHP: 5.2.4
+Requires at least: 5.8
+Tested up to: 6.6.1
+Stable tag: 1.0.6
+Requires PHP: 7.2
+WC requires at least: 5.8
+WC tested up to: 9.2.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -82,27 +84,33 @@ Anyone can use our payment plugin instantly without providing any information. H
 
 == Changelog ==
 
+= V1.0.6 =
+
+* Avoiding nonce conflict with caching plugins.
+* Storing callback nonce and verifying it via the stored value to prevent the invalid nonce problem when the nonce expires.
+* HPOS support.
+
 = V1.0.5 =
 
 * Adding a paid amount check logic for providers with unlocked amounts on the checkout page.
 
-= V1.0.4 July 4, 2024 =
+= V1.0.4 =
 
 * USDC Payouts
 
-= V1.0.3 July 1, 2024 =
+= V1.0.3 =
 
 * New payment providers
 
-= V1.0.2 May 15, 2024 =
+= V1.0.2 =
 
 * Fix USD conversion
 
-= V1.0.1 May 13, 2024 =
+= V1.0.1 =
 
 * New payment providers
 
-= V1.0.0 May 8, 2024 =
+= V1.0.0 =
 
 * Initial release
 

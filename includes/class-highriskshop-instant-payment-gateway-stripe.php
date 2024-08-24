@@ -119,11 +119,12 @@ if (is_wp_error($highriskshopgateway_stripecom_gen_wallet)) {
         $highriskshopgateway_stripecom_gen_polygon_addressIn = sanitize_text_field($highriskshopgateway_stripecom_wallet_decbody['polygon_address_in']);
 		$highriskshopgateway_stripecom_gen_callback = sanitize_url($highriskshopgateway_stripecom_wallet_decbody['callback_url']);
 		// Save $stripecomresponse in order meta data
-    $order->update_meta_data('highriskshop_stripecom_tracking_address', $highriskshopgateway_stripecom_gen_addressIn);
-    $order->update_meta_data('highriskshop_stripecom_polygon_temporary_order_wallet_address', $highriskshopgateway_stripecom_gen_polygon_addressIn);
-    $order->update_meta_data('highriskshop_stripecom_callback', $highriskshopgateway_stripecom_gen_callback);
-	$order->update_meta_data('highriskshop_stripecom_converted_amount', $highriskshopgateway_stripecom_final_total);
-	$order->update_meta_data('highriskshop_stripecom_expected_amount', $highriskshopgateway_stripecom_reference_total);
+    $order->add_meta_data('highriskshop_stripecom_tracking_address', $highriskshopgateway_stripecom_gen_addressIn, true);
+    $order->add_meta_data('highriskshop_stripecom_polygon_temporary_order_wallet_address', $highriskshopgateway_stripecom_gen_polygon_addressIn, true);
+    $order->add_meta_data('highriskshop_stripecom_callback', $highriskshopgateway_stripecom_gen_callback, true);
+	$order->add_meta_data('highriskshop_stripecom_converted_amount', $highriskshopgateway_stripecom_final_total, true);
+	$order->add_meta_data('highriskshop_stripecom_expected_amount', $highriskshopgateway_stripecom_reference_total, true);
+	$order->add_meta_data('highriskshop_stripecom_nonce', $highriskshopgateway_stripecom_nonce, true);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again (wallet address error)', 'stripecom'), 'error');
@@ -165,11 +166,6 @@ function highriskshopgateway_stripecom_change_order_status_callback( $request ) 
 	$highriskshopgateway_stripecomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
 	$highriskshopgateway_stripecompaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
 	$highriskshopgateway_stripecomfloatpaid_value_coin = (float)$highriskshopgateway_stripecompaid_value_coin;
-	
-	 // Verify nonce
-    if ( empty( $highriskshopgateway_stripecomgetnonce ) || ! wp_verify_nonce( $highriskshopgateway_stripecomgetnonce, 'highriskshopgateway_stripecom_nonce_' . $order_id ) ) {
-        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-stripe' ), array( 'status' => 403 ) );
-    }
 
     // Check if order ID parameter exists
     if ( empty( $order_id ) ) {
@@ -183,10 +179,15 @@ function highriskshopgateway_stripecom_change_order_status_callback( $request ) 
     if ( ! $order ) {
         return new WP_Error( 'invalid_order', __( 'Invalid order ID.', 'highriskshop-instant-payment-gateway-stripe' ), array( 'status' => 404 ) );
     }
+	
+	// Verify nonce
+    if ( empty( $highriskshopgateway_stripecomgetnonce ) || $order->get_meta('highriskshop_stripecom_nonce', true) !== $highriskshopgateway_stripecomgetnonce ) {
+        return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'highriskshop-instant-payment-gateway-stripe' ), array( 'status' => 403 ) );
+    }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-stripe'
     if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-stripe' === $order->get_payment_method() ) {
-	$highriskshopgateway_stripecomexpected_amount = (float)$order->get_meta('highriskshop_stripecom_expected_amount');
+	$highriskshopgateway_stripecomexpected_amount = (float)$order->get_meta('highriskshop_stripecom_expected_amount', true);
 	$highriskshopgateway_stripecomthreshold = 0.80 * $highriskshopgateway_stripecomexpected_amount;
 		if ( $highriskshopgateway_stripecomfloatpaid_value_coin < $highriskshopgateway_stripecomthreshold ) {
 			// Mark the order as failed and add an order note
