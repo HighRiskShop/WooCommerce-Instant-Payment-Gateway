@@ -4,10 +4,10 @@ Donate link: http://www.highriskshop.com/
 Tags: woocommerce,payment,instant,gateway
 Requires at least: 5.8
 Tested up to: 6.6.1
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 Requires PHP: 7.2
 WC requires at least: 5.8
-WC tested up to: 9.2.2
+WC tested up to: 9.2.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -83,6 +83,11 @@ Anyone can use our payment plugin instantly without providing any information. H
 2. screenshot-2.png
 
 == Changelog ==
+
+= V1.0.7 =
+
+* Tolerating higher fees for some of the providers.
+* Order notes in wp-admin showing TXID of payout.
 
 = V1.0.6 =
 

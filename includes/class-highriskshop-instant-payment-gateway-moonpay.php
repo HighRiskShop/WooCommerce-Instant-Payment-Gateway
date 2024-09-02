@@ -138,6 +138,7 @@ add_action( 'rest_api_init', 'highriskshopgateway_moonpaycom_change_order_status
 function highriskshopgateway_moonpaycom_change_order_status_callback( $request ) {
     $order_id = absint($request->get_param( 'order_id' ));
 	$highriskshopgateway_moonpaycomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
+	$highriskshopgateway_moonpaycompaid_txid_out = sanitize_text_field($request->get_param('txid_out'));
 
     // Check if order ID parameter exists
     if ( empty( $order_id ) ) {
@@ -160,8 +161,10 @@ function highriskshopgateway_moonpaycom_change_order_status_callback( $request )
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-moonpay'
     if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-moonpay' === $order->get_payment_method() ) {
         // Change order status to processing
-		 $order->payment_complete();
+		$order->payment_complete();
         $order->update_status( 'processing' );
+		/* translators: 1: Transaction ID */
+		$order->add_order_note( sprintf(__('Payment completed by the provider TXID: %1$s', 'highriskshop-instant-payment-gateway-moonpay'), $highriskshopgateway_moonpaycompaid_txid_out) );
         // Return success response
         return array( 'message' => 'Order status changed to processing.' );
     } else {

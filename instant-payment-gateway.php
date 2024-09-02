@@ -3,11 +3,11 @@
  * Plugin Name: Instant Approval Payment Gateway with Instant Payouts
  * Plugin URI: https://www.highriskshop.com/instant-payment-gateway/
  * Description: Instant Approval High Risk Merchant Gateway with instant payouts to your USDC wallet.
- * Version: 1.0.6
+ * Version: 1.0.7
  * Requires at least: 5.8
  * Tested up to: 6.6.1
  * WC requires at least: 5.8
- * WC tested up to: 9.2.2
+ * WC tested up to: 9.2.3
  * Requires PHP: 7.2
  * Author: HighRiskShop.COM
  * Author URI: https://www.highriskshop.com/

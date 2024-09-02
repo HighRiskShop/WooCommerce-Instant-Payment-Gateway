@@ -166,6 +166,7 @@ add_action( 'rest_api_init', 'highriskshopgateway_changenowio_change_order_statu
 function highriskshopgateway_changenowio_change_order_status_callback( $request ) {
     $order_id = absint($request->get_param( 'order_id' ));
 	$highriskshopgateway_changenowiogetnonce = sanitize_text_field($request->get_param( 'nonce' ));
+	$highriskshopgateway_changenowiopaid_txid_out = sanitize_text_field($request->get_param('txid_out'));
 	$highriskshopgateway_changenowiopaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
 	$highriskshopgateway_changenowiofloatpaid_value_coin = (float)$highriskshopgateway_changenowiopaid_value_coin;
 
@@ -194,13 +195,16 @@ function highriskshopgateway_changenowio_change_order_status_callback( $request 
 		if ( $highriskshopgateway_changenowiofloatpaid_value_coin < $highriskshopgateway_changenowiothreshold ) {
 			// Mark the order as failed and add an order note
             $order->update_status('failed', __( 'Payment received is less than 80% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-changenow' ));
-            $order->add_order_note( __( 'Order marked as failed: Payment received is less than 80% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-changenow' ) );
+            /* translators: 1: Transaction ID */
+            $order->add_order_note(sprintf( __( 'Order marked as failed: Payment received is less than 80%% of the order total. Customer may have changed the payment values on the checkout page. TXID: %1$s', 'highriskshop-instant-payment-gateway-changenow' ), $highriskshopgateway_changenowiopaid_txid_out));
             return array( 'message' => 'Order status changed to failed due to partial payment.' );
 			
 		} else {
         // Change order status to processing
-		 $order->payment_complete();
+		$order->payment_complete();
         $order->update_status( 'processing' );
+		/* translators: 1: Transaction ID */
+		$order->add_order_note( sprintf(__('Payment completed by the provider TXID: %1$s', 'highriskshop-instant-payment-gateway-changenow'), $highriskshopgateway_changenowiopaid_txid_out) );
         // Return success response
         return array( 'message' => 'Order status changed to processing.' );
 	}
