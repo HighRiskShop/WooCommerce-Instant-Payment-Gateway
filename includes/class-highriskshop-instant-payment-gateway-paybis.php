@@ -189,7 +189,7 @@ function highriskshopgateway_paybiscom_change_order_status_callback( $request ) 
     }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-paybis'
-    if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-paybis' === $order->get_payment_method() ) {
+    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'highriskshop-instant-payment-gateway-paybis' === $order->get_payment_method() ) {
 	$highriskshopgateway_paybiscomexpected_amount = (float)$order->get_meta('highriskshop_paybiscom_expected_amount', true);
 	$highriskshopgateway_paybiscomthreshold = 0.60 * $highriskshopgateway_paybiscomexpected_amount;
 		if ( $highriskshopgateway_paybiscomfloatpaid_value_coin < $highriskshopgateway_paybiscomthreshold ) {

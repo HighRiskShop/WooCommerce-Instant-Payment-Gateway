@@ -3,11 +3,11 @@ Contributors: highriskshop
 Donate link: http://www.highriskshop.com/
 Tags: woocommerce,payment,instant,gateway
 Requires at least: 5.8
-Tested up to: 6.6.1
-Stable tag: 1.0.7
+Tested up to: 6.6.2
+Stable tag: 1.0.8
 Requires PHP: 7.2
 WC requires at least: 5.8
-WC tested up to: 9.2.3
+WC tested up to: 9.3.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -83,6 +83,12 @@ Anyone can use our payment plugin instantly without providing any information. H
 2. screenshot-2.png
 
 == Changelog ==
+
+= V1.0.8 =
+
+* New Payment Providers.
+* Adds support to UPS/IMPS Payments for India (INR).
+* Fix payment detection tolerance.
 
 = V1.0.7 =
 

@@ -187,14 +187,14 @@ function highriskshopgateway_wertio_change_order_status_callback( $request ) {
     }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-wert'
-    if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-wert' === $order->get_payment_method() ) {
+    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'highriskshop-instant-payment-gateway-wert' === $order->get_payment_method() ) {
 	$highriskshopgateway_wertioexpected_amount = (float)$order->get_meta('highriskshop_wertio_expected_amount', true);
-	$highriskshopgateway_wertiothreshold = 0.80 * $highriskshopgateway_wertioexpected_amount;
+	$highriskshopgateway_wertiothreshold = 0.60 * $highriskshopgateway_wertioexpected_amount;
 		if ( $highriskshopgateway_wertiofloatpaid_value_coin < $highriskshopgateway_wertiothreshold ) {
 			// Mark the order as failed and add an order note
-            $order->update_status('failed', __( 'Payment received is less than 80% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-wert' ));
+            $order->update_status('failed', __( 'Payment received is less than 60% of the order total. Customer may have changed the payment values on the checkout page.', 'highriskshop-instant-payment-gateway-wert' ));
             /* translators: 1: Transaction ID */
-            $order->add_order_note(sprintf( __( 'Order marked as failed: Payment received is less than 80%% of the order total. Customer may have changed the payment values on the checkout page. TXID: %1$s', 'highriskshop-instant-payment-gateway-wert' ), $highriskshopgateway_wertiopaid_txid_out));
+            $order->add_order_note(sprintf( __( 'Order marked as failed: Payment received is less than 60%% of the order total. Customer may have changed the payment values on the checkout page. TXID: %1$s', 'highriskshop-instant-payment-gateway-wert' ), $highriskshopgateway_wertiopaid_txid_out));
             return array( 'message' => 'Order status changed to failed due to partial payment.' );
 			
 		} else {

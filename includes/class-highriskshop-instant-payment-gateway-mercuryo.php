@@ -160,7 +160,7 @@ function highriskshopgateway_mercuryoio_change_order_status_callback( $request )
     }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-mercuryo'
-    if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-mercuryo' === $order->get_payment_method() ) {
+    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'highriskshop-instant-payment-gateway-mercuryo' === $order->get_payment_method() ) {
         // Change order status to processing
 		$order->payment_complete();
         $order->update_status( 'processing' );

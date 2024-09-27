@@ -3,11 +3,11 @@
  * Plugin Name: Instant Approval Payment Gateway with Instant Payouts
  * Plugin URI: https://www.highriskshop.com/instant-payment-gateway/
  * Description: Instant Approval High Risk Merchant Gateway with instant payouts to your USDC wallet.
- * Version: 1.0.7
+ * Version: 1.0.8
  * Requires at least: 5.8
- * Tested up to: 6.6.1
+ * Tested up to: 6.6.2
  * WC requires at least: 5.8
- * WC tested up to: 9.2.3
+ * WC tested up to: 9.3.2
  * Requires PHP: 7.2
  * Author: HighRiskShop.COM
  * Author URI: https://www.highriskshop.com/
@@ -42,4 +42,7 @@ add_action('before_woocommerce_init', function() {
 		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-changenow.php'); // Include the payment gateway class
 		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-sardine.php'); // Include the payment gateway class
 		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-topper.php'); // Include the payment gateway class
+		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-robinhood.php'); // Include the payment gateway class
+		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-coinbase.php'); // Include the payment gateway class
+		include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-upi.php'); // Include the payment gateway class
 ?>

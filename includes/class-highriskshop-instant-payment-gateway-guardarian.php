@@ -159,7 +159,7 @@ function highriskshopgateway_guardariancom_change_order_status_callback( $reques
     }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-guardarian'
-    if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-guardarian' === $order->get_payment_method() ) {
+    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'highriskshop-instant-payment-gateway-guardarian' === $order->get_payment_method() ) {
         // Change order status to processing
 		$order->payment_complete();
         $order->update_status( 'processing' );

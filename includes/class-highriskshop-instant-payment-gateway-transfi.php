@@ -16,7 +16,7 @@ class HighRiskShop_Instant_Payment_Gateway_Transfi extends WC_Payment_Gateway {
         $this->id                 = 'highriskshop-instant-payment-gateway-transfi';
         $this->icon = sanitize_url($this->get_option('icon_url'));
         $this->method_title       = esc_html__('Instant Approval Payment Gateway with Instant Payouts (transfi.com)', 'highriskshopgateway'); // Escaping title
-        $this->method_description = esc_html__('Instant Approval High Risk Merchant Gateway with instant payouts to your USDT POLYGON wallet using transfi.com infrastructure', 'highriskshopgateway'); // Escaping description
+        $this->method_description = esc_html__('Instant Approval High Risk Merchant Gateway with instant payouts to your USDC POLYGON wallet using transfi.com infrastructure', 'highriskshopgateway'); // Escaping description
         $this->has_fields         = false;
 
         $this->init_form_fields();
@@ -57,7 +57,7 @@ class HighRiskShop_Instant_Payment_Gateway_Transfi extends WC_Payment_Gateway {
             'transficom_wallet_address' => array(
                 'title'       => esc_html__('Wallet Address', 'highriskshopgateway'), // Escaping title
                 'type'        => 'text',
-                'description' => esc_html__('Insert your USDT (Polygon) wallet address to receive instant payouts.', 'highriskshopgateway'), // Escaping description
+                'description' => esc_html__('Insert your USDC (Polygon) wallet address to receive instant payouts.', 'highriskshopgateway'), // Escaping description
                 'desc_tip'    => true,
             ),
             'icon_url' => array(
@@ -182,7 +182,7 @@ function highriskshopgateway_transficom_change_order_status_callback( $request )
     }
 
     // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-transfi'
-    if ( $order && $order->get_status() === 'pending' && 'highriskshop-instant-payment-gateway-transfi' === $order->get_payment_method() ) {
+    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'highriskshop-instant-payment-gateway-transfi' === $order->get_payment_method() ) {
         // Change order status to processing
 		$order->payment_complete();
         $order->update_status( 'processing' );
