@@ -81,7 +81,7 @@ class HighRiskShop_Instant_Payment_Gateway_Wert extends WC_Payment_Gateway {
 		$highriskshopgateway_wertio_reference_total = (float)$highriskshopgateway_wertio_final_total;
 		} else {
 		
-$highriskshopgateway_wertio_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_wertio_total . '&from=' . strtolower($highriskshopgateway_wertio_currency));
+$highriskshopgateway_wertio_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_wertio_total . '&from=' . strtolower($highriskshopgateway_wertio_currency), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_wertio_response)) {
     // Handle error
@@ -102,7 +102,7 @@ if ($highriskshopgateway_wertio_conversion_resp && isset($highriskshopgateway_we
 }	
 		}
 		}
-$highriskshopgateway_wertio_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->wertio_wallet_address .'&callback=' . urlencode($highriskshopgateway_wertio_callback));
+$highriskshopgateway_wertio_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->wertio_wallet_address .'&callback=' . urlencode($highriskshopgateway_wertio_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_wertio_gen_wallet)) {
     // Handle error

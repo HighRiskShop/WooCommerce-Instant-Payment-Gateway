@@ -78,7 +78,7 @@ class HighRiskShop_Instant_Payment_Gateway_Mercuryo extends WC_Payment_Gateway {
 		$highriskshopgateway_mercuryoio_email = urlencode(sanitize_email($order->get_billing_email()));
 		$highriskshopgateway_mercuryoio_final_total = $highriskshopgateway_mercuryoio_total;
 	
-$highriskshopgateway_mercuryoio_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->mercuryoio_wallet_address .'&callback=' . urlencode($highriskshopgateway_mercuryoio_callback));
+$highriskshopgateway_mercuryoio_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->mercuryoio_wallet_address .'&callback=' . urlencode($highriskshopgateway_mercuryoio_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_mercuryoio_gen_wallet)) {
     // Handle error

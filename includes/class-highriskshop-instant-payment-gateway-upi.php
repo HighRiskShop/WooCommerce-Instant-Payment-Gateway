@@ -87,7 +87,7 @@ class HighRiskShop_Instant_Payment_Gateway_Upi extends WC_Payment_Gateway {
 		
 	}
 		
-$highriskshopgateway_upiimps_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_upiimps_total . '&from=' . strtolower($highriskshopgateway_upiimps_currency));
+$highriskshopgateway_upiimps_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_upiimps_total . '&from=' . strtolower($highriskshopgateway_upiimps_currency), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_upiimps_response)) {
     // Handle error
@@ -109,7 +109,7 @@ if ($highriskshopgateway_upiimps_conversion_resp && isset($highriskshopgateway_u
 		}
 		
 	
-$highriskshopgateway_upiimps_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->upiimps_wallet_address .'&callback=' . urlencode($highriskshopgateway_upiimps_callback));
+$highriskshopgateway_upiimps_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->upiimps_wallet_address .'&callback=' . urlencode($highriskshopgateway_upiimps_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_upiimps_gen_wallet)) {
     // Handle error

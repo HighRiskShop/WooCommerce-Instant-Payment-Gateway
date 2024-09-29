@@ -77,7 +77,7 @@ class HighRiskShop_Instant_Payment_Gateway_Moonpay extends WC_Payment_Gateway {
 		$highriskshopgateway_moonpaycom_email = urlencode(sanitize_email($order->get_billing_email()));
 		$highriskshopgateway_moonpaycom_final_total = $highriskshopgateway_moonpaycom_total;
 	
-$highriskshopgateway_moonpaycom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->moonpaycom_wallet_address .'&callback=' . urlencode($highriskshopgateway_moonpaycom_callback));
+$highriskshopgateway_moonpaycom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->moonpaycom_wallet_address .'&callback=' . urlencode($highriskshopgateway_moonpaycom_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_moonpaycom_gen_wallet)) {
     // Handle error

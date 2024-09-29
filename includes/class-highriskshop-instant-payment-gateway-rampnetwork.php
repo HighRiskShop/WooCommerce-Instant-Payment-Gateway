@@ -81,7 +81,7 @@ class HighRiskShop_Instant_Payment_Gateway_Rampnetwork extends WC_Payment_Gatewa
 		$highriskshopgateway_rampnetwork_reference_total = (float)$highriskshopgateway_rampnetwork_final_total;
 		} else {
 		
-$highriskshopgateway_rampnetwork_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_rampnetwork_total . '&from=' . strtolower($highriskshopgateway_rampnetwork_currency));
+$highriskshopgateway_rampnetwork_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_rampnetwork_total . '&from=' . strtolower($highriskshopgateway_rampnetwork_currency), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_rampnetwork_response)) {
     // Handle error
@@ -102,7 +102,7 @@ if ($highriskshopgateway_rampnetwork_conversion_resp && isset($highriskshopgatew
 }	
 		}
 		}
-$highriskshopgateway_rampnetwork_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->rampnetwork_wallet_address .'&callback=' . urlencode($highriskshopgateway_rampnetwork_callback));
+$highriskshopgateway_rampnetwork_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->rampnetwork_wallet_address .'&callback=' . urlencode($highriskshopgateway_rampnetwork_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_rampnetwork_gen_wallet)) {
     // Handle error

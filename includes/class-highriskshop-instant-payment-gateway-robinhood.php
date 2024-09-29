@@ -81,7 +81,7 @@ class HighRiskShop_Instant_Payment_Gateway_Robinhood extends WC_Payment_Gateway 
 		$highriskshopgateway_robinhoodcom_reference_total = (float)$highriskshopgateway_robinhoodcom_final_total;
 		} else {
 		
-$highriskshopgateway_robinhoodcom_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_robinhoodcom_total . '&from=' . strtolower($highriskshopgateway_robinhoodcom_currency));
+$highriskshopgateway_robinhoodcom_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_robinhoodcom_total . '&from=' . strtolower($highriskshopgateway_robinhoodcom_currency), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_robinhoodcom_response)) {
     // Handle error
@@ -102,7 +102,7 @@ if ($highriskshopgateway_robinhoodcom_conversion_resp && isset($highriskshopgate
 }	
 		}
 		}
-$highriskshopgateway_robinhoodcom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->robinhoodcom_wallet_address .'&callback=' . urlencode($highriskshopgateway_robinhoodcom_callback));
+$highriskshopgateway_robinhoodcom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->robinhoodcom_wallet_address .'&callback=' . urlencode($highriskshopgateway_robinhoodcom_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_robinhoodcom_gen_wallet)) {
     // Handle error

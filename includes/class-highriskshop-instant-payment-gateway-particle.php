@@ -77,7 +77,7 @@ class HighRiskShop_Instant_Payment_Gateway_Particle extends WC_Payment_Gateway {
 		$highriskshopgateway_particlenetwork_email = urlencode(sanitize_email($order->get_billing_email()));
 		$highriskshopgateway_particlenetwork_final_total = $highriskshopgateway_particlenetwork_total;
 	
-$highriskshopgateway_particlenetwork_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->particlenetwork_wallet_address .'&callback=' . urlencode($highriskshopgateway_particlenetwork_callback));
+$highriskshopgateway_particlenetwork_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->particlenetwork_wallet_address .'&callback=' . urlencode($highriskshopgateway_particlenetwork_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_particlenetwork_gen_wallet)) {
     // Handle error

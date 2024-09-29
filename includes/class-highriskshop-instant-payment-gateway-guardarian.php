@@ -77,7 +77,7 @@ class HighRiskShop_Instant_Payment_Gateway_Guardarian extends WC_Payment_Gateway
 		$highriskshopgateway_guardariancom_email = urlencode(sanitize_email($order->get_billing_email()));
 		$highriskshopgateway_guardariancom_final_total = $highriskshopgateway_guardariancom_total;
 	
-$highriskshopgateway_guardariancom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->guardariancom_wallet_address .'&callback=' . urlencode($highriskshopgateway_guardariancom_callback));
+$highriskshopgateway_guardariancom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->guardariancom_wallet_address .'&callback=' . urlencode($highriskshopgateway_guardariancom_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_guardariancom_gen_wallet)) {
     // Handle error

@@ -78,7 +78,7 @@ class HighRiskShop_Instant_Payment_Gateway_Sardine extends WC_Payment_Gateway {
 		$highriskshopgateway_sardineai_email = urlencode(sanitize_email($order->get_billing_email()));
 		$highriskshopgateway_sardineai_final_total = $highriskshopgateway_sardineai_total;
 	
-$highriskshopgateway_sardineai_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->sardineai_wallet_address .'&callback=' . urlencode($highriskshopgateway_sardineai_callback));
+$highriskshopgateway_sardineai_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->sardineai_wallet_address .'&callback=' . urlencode($highriskshopgateway_sardineai_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_sardineai_gen_wallet)) {
     // Handle error

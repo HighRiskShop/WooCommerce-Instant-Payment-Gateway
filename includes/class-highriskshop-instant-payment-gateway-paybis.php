@@ -82,7 +82,7 @@ class HighRiskShop_Instant_Payment_Gateway_Paybis extends WC_Payment_Gateway {
 		$highriskshopgateway_paybiscom_reference_total = (float)$highriskshopgateway_paybiscom_final_total;
 		} else {
 		
-$highriskshopgateway_paybiscom_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_paybiscom_total . '&from=' . strtolower($highriskshopgateway_paybiscom_currency));
+$highriskshopgateway_paybiscom_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_paybiscom_total . '&from=' . strtolower($highriskshopgateway_paybiscom_currency), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_paybiscom_response)) {
     // Handle error
@@ -104,7 +104,7 @@ if ($highriskshopgateway_paybiscom_conversion_resp && isset($highriskshopgateway
 		}
 		}
 	
-$highriskshopgateway_paybiscom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->paybiscom_wallet_address .'&callback=' . urlencode($highriskshopgateway_paybiscom_callback));
+$highriskshopgateway_paybiscom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->paybiscom_wallet_address .'&callback=' . urlencode($highriskshopgateway_paybiscom_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_paybiscom_gen_wallet)) {
     // Handle error

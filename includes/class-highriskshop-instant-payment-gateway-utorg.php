@@ -77,7 +77,7 @@ class HighRiskShop_Instant_Payment_Gateway_Utorg extends WC_Payment_Gateway {
 		$highriskshopgateway_utorgpro_email = urlencode(sanitize_email($order->get_billing_email()));
 		$highriskshopgateway_utorgpro_final_total = $highriskshopgateway_utorgpro_total;
 	
-$highriskshopgateway_utorgpro_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->utorgpro_wallet_address .'&callback=' . urlencode($highriskshopgateway_utorgpro_callback));
+$highriskshopgateway_utorgpro_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->utorgpro_wallet_address .'&callback=' . urlencode($highriskshopgateway_utorgpro_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_utorgpro_gen_wallet)) {
     // Handle error

@@ -77,7 +77,7 @@ class HighRiskShop_Instant_Payment_Gateway_Transak extends WC_Payment_Gateway {
 		$highriskshopgateway_transakcom_email = urlencode(sanitize_email($order->get_billing_email()));
 		$highriskshopgateway_transakcom_final_total = $highriskshopgateway_transakcom_total;
 	
-$highriskshopgateway_transakcom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->transakcom_wallet_address .'&callback=' . urlencode($highriskshopgateway_transakcom_callback));
+$highriskshopgateway_transakcom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->transakcom_wallet_address .'&callback=' . urlencode($highriskshopgateway_transakcom_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_transakcom_gen_wallet)) {
     // Handle error

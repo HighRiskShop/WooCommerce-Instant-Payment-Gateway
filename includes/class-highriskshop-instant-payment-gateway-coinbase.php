@@ -82,7 +82,7 @@ class HighRiskShop_Instant_Payment_Gateway_Coinbase extends WC_Payment_Gateway {
 		$highriskshopgateway_coinbasecom_reference_total = (float)$highriskshopgateway_coinbasecom_final_total;
 		} else {
 		
-$highriskshopgateway_coinbasecom_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_coinbasecom_total . '&from=' . strtolower($highriskshopgateway_coinbasecom_currency));
+$highriskshopgateway_coinbasecom_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_coinbasecom_total . '&from=' . strtolower($highriskshopgateway_coinbasecom_currency), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_coinbasecom_response)) {
     // Handle error
@@ -104,7 +104,7 @@ if ($highriskshopgateway_coinbasecom_conversion_resp && isset($highriskshopgatew
 		}
 		}
 	
-$highriskshopgateway_coinbasecom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->coinbasecom_wallet_address .'&callback=' . urlencode($highriskshopgateway_coinbasecom_callback));
+$highriskshopgateway_coinbasecom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->coinbasecom_wallet_address .'&callback=' . urlencode($highriskshopgateway_coinbasecom_callback), array('timeout' => 30));
 
 if (is_wp_error($highriskshopgateway_coinbasecom_gen_wallet)) {
     // Handle error
