@@ -69,6 +69,29 @@ class HighRiskShop_Instant_Payment_Gateway_Changenow extends WC_Payment_Gateway 
             ),
         );
     }
+	 // Add this method to validate the wallet address in wp-admin
+    public function process_admin_options() {
+		if (!isset($_POST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_wpnonce'])), 'woocommerce-settings')) {
+    WC_Admin_Settings::add_error(__('Nonce verification failed. Please try again.', 'highriskshopgateway'));
+    return false;
+}
+        $changenowio_admin_wallet_address = isset($_POST[$this->plugin_id . $this->id . '_changenowio_wallet_address']) ? sanitize_text_field( wp_unslash( $_POST[$this->plugin_id . $this->id . '_changenowio_wallet_address'])) : '';
+
+        // Check if wallet address starts with "0x"
+        if (substr($changenowio_admin_wallet_address, 0, 2) !== '0x') {
+            WC_Admin_Settings::add_error(__('Invalid Wallet Address: Please insert your USDT Polygon wallet address.', 'highriskshopgateway'));
+            return false;
+        }
+
+        // Check if wallet address matches the USDT contract address
+        if (strtolower($changenowio_admin_wallet_address) === '0xc2132d05d31c914a87c6611c10748aeb04b58e8f') {
+            WC_Admin_Settings::add_error(__('Invalid Wallet Address: Please insert your USDT Polygon wallet address.', 'highriskshopgateway'));
+            return false;
+        }
+
+        // Proceed with the default processing if validations pass
+        return parent::process_admin_options();
+    }
     public function process_payment($order_id) {
         $order = wc_get_order($order_id);
         $highriskshopgateway_changenowio_currency = get_woocommerce_currency();
@@ -133,6 +156,12 @@ if (is_wp_error($highriskshopgateway_changenowio_gen_wallet)) {
 
         return null;
     }
+}
+
+// Check if the Checkout page is using Checkout Blocks
+if (highriskshopgateway_is_checkout_block()) {
+    global $woocommerce;
+	$woocommerce->cart->empty_cart();
 }
 
         // Redirect to payment page

@@ -1,0 +1,9 @@
+.highriskshopgateway-payment-method-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.highriskshopgateway-payment-method-wrapper img {
+    display: flex;
+    width: 100%;
+}

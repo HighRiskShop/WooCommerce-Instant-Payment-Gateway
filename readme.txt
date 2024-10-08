@@ -4,10 +4,10 @@ Donate link: http://www.highriskshop.com/
 Tags: woocommerce,payment,instant,gateway
 Requires at least: 5.8
 Tested up to: 6.6.2
-Stable tag: 1.0.9
+Stable tag: 1.1.0
 Requires PHP: 7.2
 WC requires at least: 5.8
-WC tested up to: 9.3.2
+WC tested up to: 9.3.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -84,9 +84,14 @@ Anyone can use our payment plugin instantly without providing any information. H
 
 == Changelog ==
 
+= V1.1.0 =
+
+* Checkout blocks support.
+* USDC Wallet validation check to prevent incorrect settings.
+
 = V1.0.9 =
 
-*Hot fix for avoiding timeouts with high response time
+* Hot fix for avoiding timeouts with high response time
 
 = V1.0.8 =
 
