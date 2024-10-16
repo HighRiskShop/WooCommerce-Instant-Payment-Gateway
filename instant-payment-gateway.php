@@ -3,7 +3,7 @@
  * Plugin Name: Instant Approval Payment Gateway with Instant Payouts
  * Plugin URI: https://www.highriskshop.com/instant-payment-gateway/
  * Description: Instant Approval High Risk Merchant Gateway with instant payouts to your USDC wallet.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Requires at least: 5.8
  * Tested up to: 6.6.2
  * WC requires at least: 5.8
@@ -86,7 +86,7 @@ add_action('wp_enqueue_scripts', 'highriskshopgateway_enqueue_styles');
 
     include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-wert.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-stripe.php'); // Include the payment gateway class
-	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-paybis.php'); // Include the payment gateway class
+	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-simpleswap.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-rampnetwork.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-mercuryo.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-transak.php'); // Include the payment gateway class
@@ -100,6 +100,8 @@ add_action('wp_enqueue_scripts', 'highriskshopgateway_enqueue_styles');
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-changenow.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-sardine.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-topper.php'); // Include the payment gateway class
+	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-unlimit.php'); // Include the payment gateway class
+	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-bitnovo.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-robinhood.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-coinbase.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-highriskshop-instant-payment-gateway-upi.php'); // Include the payment gateway class
