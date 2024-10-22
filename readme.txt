@@ -4,7 +4,7 @@ Donate link: http://www.highriskshop.com/
 Tags: woocommerce,payment,instant,gateway
 Requires at least: 5.8
 Tested up to: 6.6.2
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 Requires PHP: 7.2
 WC requires at least: 5.8
 WC tested up to: 9.3.3
@@ -83,6 +83,10 @@ Anyone can use our payment plugin instantly without providing any information. H
 2. screenshot-2.png
 
 == Changelog ==
+
+= V1.1.2 =
+
+* Hot fix currency conversion for USD provider
 
 = V1.1.1 =
 
