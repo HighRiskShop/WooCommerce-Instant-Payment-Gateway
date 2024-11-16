@@ -1,13 +1,13 @@
 === Instant Approval Payment Gateway with Instant Payouts ===
-Contributors: highriskshop
-Donate link: http://www.highriskshop.com/
+Contributors: paygatedotto
+Donate link: https://paygate.to/
 Tags: woocommerce,payment,instant,gateway
 Requires at least: 5.8
-Tested up to: 6.6.2
-Stable tag: 1.1.2
+Tested up to: 6.7
+Stable tag: 1.1.3
 Requires PHP: 7.2
 WC requires at least: 5.8
-WC tested up to: 9.3.3
+WC tested up to: 9.4.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -32,15 +32,13 @@ Powerful plugin for both WooCommerce that allows you to accept payments for your
 * Customizable payment gateway icon for each provider.
 * Multi-currency support
 
-Minimum allowed order amount varies per payment provider you can [check the full list of minimum order value per payment provider](https://www.highriskshop.com/instant-payment-gateway/#minimumorder).
+Minimum allowed order amount varies per payment provider you can [check the full list of minimum order value per payment provider](https://paygate.to/instant-payment-gateway/#minimumorder).
 
-[youtube https://www.youtube.com/watch?v=cryJl7m4yqI]
-
-The plugin and offered service through [HighRiskShop.COM Instant Payment Gateway API](https://www.highriskshop.com/instant-payment-gateway/) is subject to the [service terms](https://www.highriskshop.com/info/terms/) and [Privacy Policy](https://www.highriskshop.com/info/privacy-policy/).
+The plugin and offered service through [PayGate.to Instant Payment Gateway API](https://paygate.to/instant-payment-gateway/) is subject to the [service terms](https://paygate.to/info/terms/) and [Privacy Policy](https://paygate.to/info/privacy-policy/).
 
 == Installation ==
 
-* After installing and activating this plugin go to WooCommerce >>> Settings >>> Payments >>> HighRiskShop.COM Payments gateway
+* After installing and activating this plugin go to WooCommerce >>> Settings >>> Payments >>> PayGate.to Payments gateway
 * Activate the desired payment provider gateway and insert your USDC (Polygon) wallet address to receive instant payouts.
 * Insert desired display label and description for the payment gateway.
 * Save settings and you will be ready to accept Credit Cards or Debit Cards Visa, Mastercard, Amex, Google Pay and Apple Pay instantly!
@@ -62,20 +60,20 @@ You will receive payouts instantly to your USDC wallet with every order.
 
 = How to fix There Are No Payment Methods Available Error? =
 
-Follow the guide to [Fix WooCommerce There Are No Payment Methods Available Error](https://www.highriskshop.com/fix-woocommerce-there-are-no-payment-methods-available-error/)
+Follow the guide to [Fix WooCommerce There Are No Payment Methods Available Error](https://paygate.to/fix-woocommerce-there-are-no-payment-methods-available-error/)
 
 
 = I have a problem with one of my orders? =
 
-Please contact HighRiskShop.com support team to guide you.
+Please contact PayGate.to support team to guide you.
 
 = I'm receiving payments to my wallet but orders are still pending payment? =
 
-Our plugin is tested to mark orders as processing automatically after payment. You can follow our [guide for fixing common payment gateway issues](https://www.highriskshop.com/woocommerce-payment-gateway-troubleshooting/).
+Our plugin is tested to mark orders as processing automatically after payment. You can follow our [guide for fixing common payment gateway issues](https://paygate.to/woocommerce-payment-gateway-troubleshooting/).
 
 = Are there any restricted businesses? =
 
-Anyone can use our payment plugin instantly without providing any information. However if your website category falls under our [prohibited business list](https://www.highriskshop.com/instant-payment-gateway/#prohibited) your domain will be blocked.
+Anyone can use our payment plugin instantly without providing any information. However if your website category falls under our [prohibited business list](https://paygate.to/instant-payment-gateway/#prohibited) your domain will be blocked.
 
 == Screenshots ==
 
@@ -83,6 +81,11 @@ Anyone can use our payment plugin instantly without providing any information. H
 2. screenshot-2.png
 
 == Changelog ==
+
+= V1.1.3 =
+
+* PayGate.to acquisition
+* New providers
 
 = V1.1.2 =
 

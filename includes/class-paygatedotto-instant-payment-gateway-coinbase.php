@@ -3,18 +3,18 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-add_action('plugins_loaded', 'init_highriskshopgateway_coinbase_gateway');
+add_action('plugins_loaded', 'init_paygatedottogateway_coinbase_gateway');
 
-function init_highriskshopgateway_coinbase_gateway() {
+function init_paygatedottogateway_coinbase_gateway() {
     if (!class_exists('WC_Payment_Gateway')) {
         return;
     }
 
 
-class HighRiskShop_Instant_Payment_Gateway_Coinbase extends WC_Payment_Gateway {
+class PayGateDotTo_Instant_Payment_Gateway_Coinbase extends WC_Payment_Gateway {
 
     public function __construct() {
-        $this->id                 = 'highriskshop-instant-payment-gateway-coinbase';
+        $this->id                 = 'paygatedotto-instant-payment-gateway-coinbase';
         $this->icon = sanitize_url($this->get_option('icon_url'));
         $this->method_title       = esc_html__('Instant Approval Payment Gateway with Instant Payouts (coinbase.com)', 'instant-approval-payment-gateway'); // Escaping title
         $this->method_description = esc_html__('Instant Approval High Risk Merchant Gateway with instant payouts to your USDC POLYGON wallet using coinbase.com infrastructure', 'instant-approval-payment-gateway'); // Escaping description
@@ -94,32 +94,32 @@ class HighRiskShop_Instant_Payment_Gateway_Coinbase extends WC_Payment_Gateway {
     }
     public function process_payment($order_id) {
         $order = wc_get_order($order_id);
-        $highriskshopgateway_coinbasecom_currency = get_woocommerce_currency();
-		$highriskshopgateway_coinbasecom_total = $order->get_total();
-		$highriskshopgateway_coinbasecom_nonce = wp_create_nonce( 'highriskshopgateway_coinbasecom_nonce_' . $order_id );
-		$highriskshopgateway_coinbasecom_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $highriskshopgateway_coinbasecom_nonce,), rest_url('highriskshopgateway/v1/highriskshopgateway-coinbasecom/'));
-		$highriskshopgateway_coinbasecom_email = urlencode(sanitize_email($order->get_billing_email()));
-		$highriskshopgateway_coinbasecom_final_total = $highriskshopgateway_coinbasecom_total;
+        $paygatedottogateway_coinbasecom_currency = get_woocommerce_currency();
+		$paygatedottogateway_coinbasecom_total = $order->get_total();
+		$paygatedottogateway_coinbasecom_nonce = wp_create_nonce( 'paygatedottogateway_coinbasecom_nonce_' . $order_id );
+		$paygatedottogateway_coinbasecom_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $paygatedottogateway_coinbasecom_nonce,), rest_url('paygatedottogateway/v1/paygatedottogateway-coinbasecom/'));
+		$paygatedottogateway_coinbasecom_email = urlencode(sanitize_email($order->get_billing_email()));
+		$paygatedottogateway_coinbasecom_final_total = $paygatedottogateway_coinbasecom_total;
 		
-		if ($highriskshopgateway_coinbasecom_currency === 'USD') {
-		$highriskshopgateway_coinbasecom_reference_total = (float)$highriskshopgateway_coinbasecom_final_total;
+		if ($paygatedottogateway_coinbasecom_currency === 'USD') {
+		$paygatedottogateway_coinbasecom_reference_total = (float)$paygatedottogateway_coinbasecom_final_total;
 		} else {
 		
-$highriskshopgateway_coinbasecom_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_coinbasecom_total . '&from=' . strtolower($highriskshopgateway_coinbasecom_currency), array('timeout' => 30));
+$paygatedottogateway_coinbasecom_response = wp_remote_get('https://api.paygate.to/control/convert.php?value=' . $paygatedottogateway_coinbasecom_total . '&from=' . strtolower($paygatedottogateway_coinbasecom_currency), array('timeout' => 30));
 
-if (is_wp_error($highriskshopgateway_coinbasecom_response)) {
+if (is_wp_error($paygatedottogateway_coinbasecom_response)) {
     // Handle error
     wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to failed currency conversion process, please try again', 'instant-approval-payment-gateway'), 'error');
     return null;
 } else {
 
-$highriskshopgateway_coinbasecom_body = wp_remote_retrieve_body($highriskshopgateway_coinbasecom_response);
-$highriskshopgateway_coinbasecom_conversion_resp = json_decode($highriskshopgateway_coinbasecom_body, true);
+$paygatedottogateway_coinbasecom_body = wp_remote_retrieve_body($paygatedottogateway_coinbasecom_response);
+$paygatedottogateway_coinbasecom_conversion_resp = json_decode($paygatedottogateway_coinbasecom_body, true);
 
-if ($highriskshopgateway_coinbasecom_conversion_resp && isset($highriskshopgateway_coinbasecom_conversion_resp['value_coin'])) {
+if ($paygatedottogateway_coinbasecom_conversion_resp && isset($paygatedottogateway_coinbasecom_conversion_resp['value_coin'])) {
     // Escape output
-    $highriskshopgateway_coinbasecom_finalusd_total	= sanitize_text_field($highriskshopgateway_coinbasecom_conversion_resp['value_coin']);
-    $highriskshopgateway_coinbasecom_reference_total = (float)$highriskshopgateway_coinbasecom_finalusd_total;	
+    $paygatedottogateway_coinbasecom_finalusd_total	= sanitize_text_field($paygatedottogateway_coinbasecom_conversion_resp['value_coin']);
+    $paygatedottogateway_coinbasecom_reference_total = (float)$paygatedottogateway_coinbasecom_finalusd_total;	
 } else {
     wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (unsupported store currency)', 'instant-approval-payment-gateway'), 'error');
     return null;
@@ -127,29 +127,29 @@ if ($highriskshopgateway_coinbasecom_conversion_resp && isset($highriskshopgatew
 		}
 		}
 	
-$highriskshopgateway_coinbasecom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->coinbasecom_wallet_address .'&callback=' . urlencode($highriskshopgateway_coinbasecom_callback), array('timeout' => 30));
+$paygatedottogateway_coinbasecom_gen_wallet = wp_remote_get('https://api.paygate.to/control/wallet.php?address=' . $this->coinbasecom_wallet_address .'&callback=' . urlencode($paygatedottogateway_coinbasecom_callback), array('timeout' => 30));
 
-if (is_wp_error($highriskshopgateway_coinbasecom_gen_wallet)) {
+if (is_wp_error($paygatedottogateway_coinbasecom_gen_wallet)) {
     // Handle error
     wc_add_notice(__('Wallet error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to incorrect payout wallet settings, please contact website admin', 'instant-approval-payment-gateway'), 'error');
     return null;
 } else {
-	$highriskshopgateway_coinbasecom_wallet_body = wp_remote_retrieve_body($highriskshopgateway_coinbasecom_gen_wallet);
-	$highriskshopgateway_coinbasecom_wallet_decbody = json_decode($highriskshopgateway_coinbasecom_wallet_body, true);
+	$paygatedottogateway_coinbasecom_wallet_body = wp_remote_retrieve_body($paygatedottogateway_coinbasecom_gen_wallet);
+	$paygatedottogateway_coinbasecom_wallet_decbody = json_decode($paygatedottogateway_coinbasecom_wallet_body, true);
 
  // Check if decoding was successful
-    if ($highriskshopgateway_coinbasecom_wallet_decbody && isset($highriskshopgateway_coinbasecom_wallet_decbody['address_in'])) {
+    if ($paygatedottogateway_coinbasecom_wallet_decbody && isset($paygatedottogateway_coinbasecom_wallet_decbody['address_in'])) {
         // Store the address_in as a variable
-        $highriskshopgateway_coinbasecom_gen_addressIn = wp_kses_post($highriskshopgateway_coinbasecom_wallet_decbody['address_in']);
-        $highriskshopgateway_coinbasecom_gen_polygon_addressIn = sanitize_text_field($highriskshopgateway_coinbasecom_wallet_decbody['polygon_address_in']);
-		$highriskshopgateway_coinbasecom_gen_callback = sanitize_url($highriskshopgateway_coinbasecom_wallet_decbody['callback_url']);
+        $paygatedottogateway_coinbasecom_gen_addressIn = wp_kses_post($paygatedottogateway_coinbasecom_wallet_decbody['address_in']);
+        $paygatedottogateway_coinbasecom_gen_polygon_addressIn = sanitize_text_field($paygatedottogateway_coinbasecom_wallet_decbody['polygon_address_in']);
+		$paygatedottogateway_coinbasecom_gen_callback = sanitize_url($paygatedottogateway_coinbasecom_wallet_decbody['callback_url']);
 		// Save $coinbasecomresponse in order meta data
-    $order->add_meta_data('highriskshop_coinbasecom_tracking_address', $highriskshopgateway_coinbasecom_gen_addressIn, true);
-    $order->add_meta_data('highriskshop_coinbasecom_polygon_temporary_order_wallet_address', $highriskshopgateway_coinbasecom_gen_polygon_addressIn, true);
-    $order->add_meta_data('highriskshop_coinbasecom_callback', $highriskshopgateway_coinbasecom_gen_callback, true);
-	$order->add_meta_data('highriskshop_coinbasecom_converted_amount', $highriskshopgateway_coinbasecom_final_total, true);
-	$order->add_meta_data('highriskshop_coinbasecom_expected_amount', $highriskshopgateway_coinbasecom_reference_total, true);
-	$order->add_meta_data('highriskshop_coinbasecom_nonce', $highriskshopgateway_coinbasecom_nonce, true);
+    $order->add_meta_data('paygatedotto_coinbasecom_tracking_address', $paygatedottogateway_coinbasecom_gen_addressIn, true);
+    $order->add_meta_data('paygatedotto_coinbasecom_polygon_temporary_order_wallet_address', $paygatedottogateway_coinbasecom_gen_polygon_addressIn, true);
+    $order->add_meta_data('paygatedotto_coinbasecom_callback', $paygatedottogateway_coinbasecom_gen_callback, true);
+	$order->add_meta_data('paygatedotto_coinbasecom_converted_amount', $paygatedottogateway_coinbasecom_final_total, true);
+	$order->add_meta_data('paygatedotto_coinbasecom_expected_amount', $paygatedottogateway_coinbasecom_reference_total, true);
+	$order->add_meta_data('paygatedotto_coinbasecom_nonce', $paygatedottogateway_coinbasecom_nonce, true);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (wallet address error)', 'instant-approval-payment-gateway'), 'error');
@@ -159,7 +159,7 @@ if (is_wp_error($highriskshopgateway_coinbasecom_gen_wallet)) {
 }
 
 // Check if the Checkout page is using Checkout Blocks
-if (highriskshopgateway_is_checkout_block()) {
+if (paygatedottogateway_is_checkout_block()) {
     global $woocommerce;
 	$woocommerce->cart->empty_cart();
 }
@@ -167,37 +167,37 @@ if (highriskshopgateway_is_checkout_block()) {
         // Redirect to payment page
         return array(
             'result'   => 'success',
-            'redirect' => 'https://pay.highriskshop.com/process-payment.php?address=' . $highriskshopgateway_coinbasecom_gen_addressIn . '&amount=' . (float)$highriskshopgateway_coinbasecom_final_total . '&provider=coinbase&email=' . $highriskshopgateway_coinbasecom_email . '&currency=' . $highriskshopgateway_coinbasecom_currency,
+            'redirect' => 'https://checkout.paygate.to/process-payment.php?address=' . $paygatedottogateway_coinbasecom_gen_addressIn . '&amount=' . (float)$paygatedottogateway_coinbasecom_final_total . '&provider=coinbase&email=' . $paygatedottogateway_coinbasecom_email . '&currency=' . $paygatedottogateway_coinbasecom_currency,
         );
     }
 
 }
 
-function highriskshop_add_instant_payment_gateway_coinbase($gateways) {
-    $gateways[] = 'HighRiskShop_Instant_Payment_Gateway_Coinbase';
+function paygatedotto_add_instant_payment_gateway_coinbase($gateways) {
+    $gateways[] = 'PayGateDotTo_Instant_Payment_Gateway_Coinbase';
     return $gateways;
 }
-add_filter('woocommerce_payment_gateways', 'highriskshop_add_instant_payment_gateway_coinbase');
+add_filter('woocommerce_payment_gateways', 'paygatedotto_add_instant_payment_gateway_coinbase');
 }
 
 // Add custom endpoint for changing order status
-function highriskshopgateway_coinbasecom_change_order_status_rest_endpoint() {
+function paygatedottogateway_coinbasecom_change_order_status_rest_endpoint() {
     // Register custom route
-    register_rest_route( 'highriskshopgateway/v1', '/highriskshopgateway-coinbasecom/', array(
+    register_rest_route( 'paygatedottogateway/v1', '/paygatedottogateway-coinbasecom/', array(
         'methods'  => 'GET',
-        'callback' => 'highriskshopgateway_coinbasecom_change_order_status_callback',
+        'callback' => 'paygatedottogateway_coinbasecom_change_order_status_callback',
         'permission_callback' => '__return_true',
     ));
 }
-add_action( 'rest_api_init', 'highriskshopgateway_coinbasecom_change_order_status_rest_endpoint' );
+add_action( 'rest_api_init', 'paygatedottogateway_coinbasecom_change_order_status_rest_endpoint' );
 
 // Callback function to change order status
-function highriskshopgateway_coinbasecom_change_order_status_callback( $request ) {
+function paygatedottogateway_coinbasecom_change_order_status_callback( $request ) {
     $order_id = absint($request->get_param( 'order_id' ));
-	$highriskshopgateway_coinbasecomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
-	$highriskshopgateway_coinbasecompaid_txid_out = sanitize_text_field($request->get_param('txid_out'));
-	$highriskshopgateway_coinbasecompaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
-	$highriskshopgateway_coinbasecomfloatpaid_value_coin = (float)$highriskshopgateway_coinbasecompaid_value_coin;
+	$paygatedottogateway_coinbasecomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
+	$paygatedottogateway_coinbasecompaid_txid_out = sanitize_text_field($request->get_param('txid_out'));
+	$paygatedottogateway_coinbasecompaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
+	$paygatedottogateway_coinbasecomfloatpaid_value_coin = (float)$paygatedottogateway_coinbasecompaid_value_coin;
 
     // Check if order ID parameter exists
     if ( empty( $order_id ) ) {
@@ -213,19 +213,19 @@ function highriskshopgateway_coinbasecom_change_order_status_callback( $request 
     }
 	
 	// Verify nonce
-    if ( empty( $highriskshopgateway_coinbasecomgetnonce ) || $order->get_meta('highriskshop_coinbasecom_nonce', true) !== $highriskshopgateway_coinbasecomgetnonce ) {
+    if ( empty( $paygatedottogateway_coinbasecomgetnonce ) || $order->get_meta('paygatedotto_coinbasecom_nonce', true) !== $paygatedottogateway_coinbasecomgetnonce ) {
         return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'instant-approval-payment-gateway' ), array( 'status' => 403 ) );
     }
 
-    // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-coinbase'
-    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'highriskshop-instant-payment-gateway-coinbase' === $order->get_payment_method() ) {
-	$highriskshopgateway_coinbasecomexpected_amount = (float)$order->get_meta('highriskshop_coinbasecom_expected_amount', true);
-	$highriskshopgateway_coinbasecomthreshold = 0.60 * $highriskshopgateway_coinbasecomexpected_amount;
-		if ( $highriskshopgateway_coinbasecomfloatpaid_value_coin < $highriskshopgateway_coinbasecomthreshold ) {
+    // Check if the order is pending and payment method is 'paygatedotto-instant-payment-gateway-coinbase'
+    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'paygatedotto-instant-payment-gateway-coinbase' === $order->get_payment_method() ) {
+	$paygatedottogateway_coinbasecomexpected_amount = (float)$order->get_meta('paygatedotto_coinbasecom_expected_amount', true);
+	$paygatedottogateway_coinbasecomthreshold = 0.60 * $paygatedottogateway_coinbasecomexpected_amount;
+		if ( $paygatedottogateway_coinbasecomfloatpaid_value_coin < $paygatedottogateway_coinbasecomthreshold ) {
 			// Mark the order as failed and add an order note
             $order->update_status('failed', __( 'Payment received is less than 60% of the order total. Customer may have changed the payment values on the checkout page.', 'instant-approval-payment-gateway' ));
             /* translators: 1: Transaction ID */
-            $order->add_order_note(sprintf( __( 'Order marked as failed: Payment received is less than 60%% of the order total. Customer may have changed the payment values on the checkout page. TXID: %1$s', 'instant-approval-payment-gateway' ), $highriskshopgateway_coinbasecompaid_txid_out));
+            $order->add_order_note(sprintf( __( 'Order marked as failed: Payment received is less than 60%% of the order total. Customer may have changed the payment values on the checkout page. TXID: %1$s', 'instant-approval-payment-gateway' ), $paygatedottogateway_coinbasecompaid_txid_out));
             return array( 'message' => 'Order status changed to failed due to partial payment.' );
 			
 		} else {
@@ -233,7 +233,7 @@ function highriskshopgateway_coinbasecom_change_order_status_callback( $request 
 		$order->payment_complete();
         $order->update_status( 'processing' );
 		/* translators: 1: Transaction ID */
-		$order->add_order_note( sprintf(__('Payment completed by the provider TXID: %1$s', 'instant-approval-payment-gateway'), $highriskshopgateway_coinbasecompaid_txid_out) );
+		$order->add_order_note( sprintf(__('Payment completed by the provider TXID: %1$s', 'instant-approval-payment-gateway'), $paygatedottogateway_coinbasecompaid_txid_out) );
         // Return success response
         return array( 'message' => 'Order status changed to processing.' );
 	}

@@ -1,0 +1,9 @@
+.paygatedottogateway-payment-method-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.paygatedottogateway-payment-method-wrapper img {
+    display: flex;
+    width: 100%;
+}

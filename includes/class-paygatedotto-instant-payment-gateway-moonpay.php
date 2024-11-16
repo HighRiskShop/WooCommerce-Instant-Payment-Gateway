@@ -3,17 +3,17 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-add_action('plugins_loaded', 'init_highriskshopgateway_moonpay_gateway');
+add_action('plugins_loaded', 'init_paygatedottogateway_moonpay_gateway');
 
-function init_highriskshopgateway_moonpay_gateway() {
+function init_paygatedottogateway_moonpay_gateway() {
     if (!class_exists('WC_Payment_Gateway')) {
         return;
     }
 
-class HighRiskShop_Instant_Payment_Gateway_Moonpay extends WC_Payment_Gateway {
+class PayGateDotTo_Instant_Payment_Gateway_Moonpay extends WC_Payment_Gateway {
 
     public function __construct() {
-        $this->id                 = 'highriskshop-instant-payment-gateway-moonpay';
+        $this->id                 = 'paygatedotto-instant-payment-gateway-moonpay';
         $this->icon = sanitize_url($this->get_option('icon_url'));
         $this->method_title       = esc_html__('Instant Approval Payment Gateway with Instant Payouts (moonpay.com)', 'instant-approval-payment-gateway'); // Escaping title
         $this->method_description = esc_html__('Instant Approval High Risk Merchant Gateway with instant payouts to your USDC POLYGON wallet using moonpay.com infrastructure', 'instant-approval-payment-gateway'); // Escaping description
@@ -93,35 +93,35 @@ class HighRiskShop_Instant_Payment_Gateway_Moonpay extends WC_Payment_Gateway {
     }
     public function process_payment($order_id) {
         $order = wc_get_order($order_id);
-        $highriskshopgateway_moonpaycom_currency = get_woocommerce_currency();
-		$highriskshopgateway_moonpaycom_total = $order->get_total();
-		$highriskshopgateway_moonpaycom_nonce = wp_create_nonce( 'highriskshopgateway_moonpaycom_nonce_' . $order_id );
-		$highriskshopgateway_moonpaycom_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $highriskshopgateway_moonpaycom_nonce,), rest_url('highriskshopgateway/v1/highriskshopgateway-moonpaycom/'));
-		$highriskshopgateway_moonpaycom_email = urlencode(sanitize_email($order->get_billing_email()));
-		$highriskshopgateway_moonpaycom_final_total = $highriskshopgateway_moonpaycom_total;
+        $paygatedottogateway_moonpaycom_currency = get_woocommerce_currency();
+		$paygatedottogateway_moonpaycom_total = $order->get_total();
+		$paygatedottogateway_moonpaycom_nonce = wp_create_nonce( 'paygatedottogateway_moonpaycom_nonce_' . $order_id );
+		$paygatedottogateway_moonpaycom_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $paygatedottogateway_moonpaycom_nonce,), rest_url('paygatedottogateway/v1/paygatedottogateway-moonpaycom/'));
+		$paygatedottogateway_moonpaycom_email = urlencode(sanitize_email($order->get_billing_email()));
+		$paygatedottogateway_moonpaycom_final_total = $paygatedottogateway_moonpaycom_total;
 	
-$highriskshopgateway_moonpaycom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->moonpaycom_wallet_address .'&callback=' . urlencode($highriskshopgateway_moonpaycom_callback), array('timeout' => 30));
+$paygatedottogateway_moonpaycom_gen_wallet = wp_remote_get('https://api.paygate.to/control/wallet.php?address=' . $this->moonpaycom_wallet_address .'&callback=' . urlencode($paygatedottogateway_moonpaycom_callback), array('timeout' => 30));
 
-if (is_wp_error($highriskshopgateway_moonpaycom_gen_wallet)) {
+if (is_wp_error($paygatedottogateway_moonpaycom_gen_wallet)) {
     // Handle error
     wc_add_notice(__('Wallet error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to incorrect payout wallet settings, please contact website admin', 'instant-approval-payment-gateway'), 'error');
     return null;
 } else {
-	$highriskshopgateway_moonpaycom_wallet_body = wp_remote_retrieve_body($highriskshopgateway_moonpaycom_gen_wallet);
-	$highriskshopgateway_moonpaycom_wallet_decbody = json_decode($highriskshopgateway_moonpaycom_wallet_body, true);
+	$paygatedottogateway_moonpaycom_wallet_body = wp_remote_retrieve_body($paygatedottogateway_moonpaycom_gen_wallet);
+	$paygatedottogateway_moonpaycom_wallet_decbody = json_decode($paygatedottogateway_moonpaycom_wallet_body, true);
 
  // Check if decoding was successful
-    if ($highriskshopgateway_moonpaycom_wallet_decbody && isset($highriskshopgateway_moonpaycom_wallet_decbody['address_in'])) {
+    if ($paygatedottogateway_moonpaycom_wallet_decbody && isset($paygatedottogateway_moonpaycom_wallet_decbody['address_in'])) {
         // Store the address_in as a variable
-        $highriskshopgateway_moonpaycom_gen_addressIn = wp_kses_post($highriskshopgateway_moonpaycom_wallet_decbody['address_in']);
-        $highriskshopgateway_moonpaycom_gen_polygon_addressIn = sanitize_text_field($highriskshopgateway_moonpaycom_wallet_decbody['polygon_address_in']);
-		$highriskshopgateway_moonpaycom_gen_callback = sanitize_url($highriskshopgateway_moonpaycom_wallet_decbody['callback_url']);
+        $paygatedottogateway_moonpaycom_gen_addressIn = wp_kses_post($paygatedottogateway_moonpaycom_wallet_decbody['address_in']);
+        $paygatedottogateway_moonpaycom_gen_polygon_addressIn = sanitize_text_field($paygatedottogateway_moonpaycom_wallet_decbody['polygon_address_in']);
+		$paygatedottogateway_moonpaycom_gen_callback = sanitize_url($paygatedottogateway_moonpaycom_wallet_decbody['callback_url']);
 		// Save $moonpaycomresponse in order meta data
-    $order->add_meta_data('highriskshop_moonpaycom_tracking_address', $highriskshopgateway_moonpaycom_gen_addressIn, true);
-    $order->add_meta_data('highriskshop_moonpaycom_polygon_temporary_order_wallet_address', $highriskshopgateway_moonpaycom_gen_polygon_addressIn, true);
-    $order->add_meta_data('highriskshop_moonpaycom_callback', $highriskshopgateway_moonpaycom_gen_callback, true);
-	$order->add_meta_data('highriskshop_moonpaycom_converted_amount', $highriskshopgateway_moonpaycom_final_total, true);
-	$order->add_meta_data('highriskshop_moonpaycom_nonce', $highriskshopgateway_moonpaycom_nonce, true);
+    $order->add_meta_data('paygatedotto_moonpaycom_tracking_address', $paygatedottogateway_moonpaycom_gen_addressIn, true);
+    $order->add_meta_data('paygatedotto_moonpaycom_polygon_temporary_order_wallet_address', $paygatedottogateway_moonpaycom_gen_polygon_addressIn, true);
+    $order->add_meta_data('paygatedotto_moonpaycom_callback', $paygatedottogateway_moonpaycom_gen_callback, true);
+	$order->add_meta_data('paygatedotto_moonpaycom_converted_amount', $paygatedottogateway_moonpaycom_final_total, true);
+	$order->add_meta_data('paygatedotto_moonpaycom_nonce', $paygatedottogateway_moonpaycom_nonce, true);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (wallet address error)', 'instant-approval-payment-gateway'), 'error');
@@ -131,7 +131,7 @@ if (is_wp_error($highriskshopgateway_moonpaycom_gen_wallet)) {
 }
 
 // Check if the Checkout page is using Checkout Blocks
-if (highriskshopgateway_is_checkout_block()) {
+if (paygatedottogateway_is_checkout_block()) {
     global $woocommerce;
 	$woocommerce->cart->empty_cart();
 }
@@ -139,35 +139,35 @@ if (highriskshopgateway_is_checkout_block()) {
         // Redirect to payment page
         return array(
             'result'   => 'success',
-            'redirect' => 'https://pay.highriskshop.com/process-payment.php?address=' . $highriskshopgateway_moonpaycom_gen_addressIn . '&amount=' . (float)$highriskshopgateway_moonpaycom_final_total . '&provider=moonpay&email=' . $highriskshopgateway_moonpaycom_email . '&currency=' . $highriskshopgateway_moonpaycom_currency,
+            'redirect' => 'https://checkout.paygate.to/process-payment.php?address=' . $paygatedottogateway_moonpaycom_gen_addressIn . '&amount=' . (float)$paygatedottogateway_moonpaycom_final_total . '&provider=moonpay&email=' . $paygatedottogateway_moonpaycom_email . '&currency=' . $paygatedottogateway_moonpaycom_currency,
         );
     }
 
 }
 
-function highriskshop_add_instant_payment_gateway_moonpay($gateways) {
-    $gateways[] = 'HighRiskShop_Instant_Payment_Gateway_Moonpay';
+function paygatedotto_add_instant_payment_gateway_moonpay($gateways) {
+    $gateways[] = 'PayGateDotTo_Instant_Payment_Gateway_Moonpay';
     return $gateways;
 }
-add_filter('woocommerce_payment_gateways', 'highriskshop_add_instant_payment_gateway_moonpay');
+add_filter('woocommerce_payment_gateways', 'paygatedotto_add_instant_payment_gateway_moonpay');
 }
 
 // Add custom endpoint for changing order status
-function highriskshopgateway_moonpaycom_change_order_status_rest_endpoint() {
+function paygatedottogateway_moonpaycom_change_order_status_rest_endpoint() {
     // Register custom route
-    register_rest_route( 'highriskshopgateway/v1', '/highriskshopgateway-moonpaycom/', array(
+    register_rest_route( 'paygatedottogateway/v1', '/paygatedottogateway-moonpaycom/', array(
         'methods'  => 'GET',
-        'callback' => 'highriskshopgateway_moonpaycom_change_order_status_callback',
+        'callback' => 'paygatedottogateway_moonpaycom_change_order_status_callback',
         'permission_callback' => '__return_true',
     ));
 }
-add_action( 'rest_api_init', 'highriskshopgateway_moonpaycom_change_order_status_rest_endpoint' );
+add_action( 'rest_api_init', 'paygatedottogateway_moonpaycom_change_order_status_rest_endpoint' );
 
 // Callback function to change order status
-function highriskshopgateway_moonpaycom_change_order_status_callback( $request ) {
+function paygatedottogateway_moonpaycom_change_order_status_callback( $request ) {
     $order_id = absint($request->get_param( 'order_id' ));
-	$highriskshopgateway_moonpaycomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
-	$highriskshopgateway_moonpaycompaid_txid_out = sanitize_text_field($request->get_param('txid_out'));
+	$paygatedottogateway_moonpaycomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
+	$paygatedottogateway_moonpaycompaid_txid_out = sanitize_text_field($request->get_param('txid_out'));
 
     // Check if order ID parameter exists
     if ( empty( $order_id ) ) {
@@ -183,17 +183,17 @@ function highriskshopgateway_moonpaycom_change_order_status_callback( $request )
     }
 	
 	// Verify nonce
-    if ( empty( $highriskshopgateway_moonpaycomgetnonce ) || $order->get_meta('highriskshop_moonpaycom_nonce', true) !== $highriskshopgateway_moonpaycomgetnonce ) {
+    if ( empty( $paygatedottogateway_moonpaycomgetnonce ) || $order->get_meta('paygatedotto_moonpaycom_nonce', true) !== $paygatedottogateway_moonpaycomgetnonce ) {
         return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'instant-approval-payment-gateway' ), array( 'status' => 403 ) );
     }
 
-    // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-moonpay'
-    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'highriskshop-instant-payment-gateway-moonpay' === $order->get_payment_method() ) {
+    // Check if the order is pending and payment method is 'paygatedotto-instant-payment-gateway-moonpay'
+    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'paygatedotto-instant-payment-gateway-moonpay' === $order->get_payment_method() ) {
         // Change order status to processing
 		$order->payment_complete();
         $order->update_status( 'processing' );
 		/* translators: 1: Transaction ID */
-		$order->add_order_note( sprintf(__('Payment completed by the provider TXID: %1$s', 'instant-approval-payment-gateway'), $highriskshopgateway_moonpaycompaid_txid_out) );
+		$order->add_order_note( sprintf(__('Payment completed by the provider TXID: %1$s', 'instant-approval-payment-gateway'), $paygatedottogateway_moonpaycompaid_txid_out) );
         // Return success response
         return array( 'message' => 'Order status changed to processing.' );
     } else {

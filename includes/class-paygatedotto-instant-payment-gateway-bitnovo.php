@@ -3,17 +3,17 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-add_action('plugins_loaded', 'init_highriskshopgateway_bitnovocom_gateway');
+add_action('plugins_loaded', 'init_paygatedottogateway_bitnovocom_gateway');
 
-function init_highriskshopgateway_bitnovocom_gateway() {
+function init_paygatedottogateway_bitnovocom_gateway() {
     if (!class_exists('WC_Payment_Gateway')) {
         return;
     }
 
-class HighRiskShop_Instant_Payment_Gateway_Bitnovo extends WC_Payment_Gateway {
+class PayGateDotTo_Instant_Payment_Gateway_Bitnovo extends WC_Payment_Gateway {
 
     public function __construct() {
-        $this->id                 = 'highriskshop-instant-payment-gateway-bitnovo';
+        $this->id                 = 'paygatedotto-instant-payment-gateway-bitnovo';
         $this->icon = sanitize_url($this->get_option('icon_url'));
         $this->method_title       = esc_html__('Instant Approval Payment Gateway with Instant Payouts (bitnovo.com)', 'instant-approval-payment-gateway'); // Escaping title
         $this->method_description = esc_html__('Instant Approval High Risk Merchant Gateway with instant payouts to your USDC POLYGON wallet using bitnovo.com infrastructure', 'instant-approval-payment-gateway'); // Escaping description
@@ -93,61 +93,61 @@ class HighRiskShop_Instant_Payment_Gateway_Bitnovo extends WC_Payment_Gateway {
     }
     public function process_payment($order_id) {
         $order = wc_get_order($order_id);
-        $highriskshopgateway_bitnovocom_currency = get_woocommerce_currency();
-		$highriskshopgateway_bitnovocom_total = $order->get_total();
-		$highriskshopgateway_bitnovocom_nonce = wp_create_nonce( 'highriskshopgateway_bitnovocom_nonce_' . $order_id );
-		$highriskshopgateway_bitnovocom_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $highriskshopgateway_bitnovocom_nonce,), rest_url('highriskshopgateway/v1/highriskshopgateway-bitnovocom/'));
-		$highriskshopgateway_bitnovocom_email = urlencode(sanitize_email($order->get_billing_email()));
+        $paygatedottogateway_bitnovocom_currency = get_woocommerce_currency();
+		$paygatedottogateway_bitnovocom_total = $order->get_total();
+		$paygatedottogateway_bitnovocom_nonce = wp_create_nonce( 'paygatedottogateway_bitnovocom_nonce_' . $order_id );
+		$paygatedottogateway_bitnovocom_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $paygatedottogateway_bitnovocom_nonce,), rest_url('paygatedottogateway/v1/paygatedottogateway-bitnovocom/'));
+		$paygatedottogateway_bitnovocom_email = urlencode(sanitize_email($order->get_billing_email()));
 		
-		if ($highriskshopgateway_bitnovocom_currency === 'USD') {
-        $highriskshopgateway_bitnovocom_final_total = $highriskshopgateway_bitnovocom_total;
-		$highriskshopgateway_bitnovocom_reference_total = (float)$highriskshopgateway_bitnovocom_final_total;
+		if ($paygatedottogateway_bitnovocom_currency === 'USD') {
+        $paygatedottogateway_bitnovocom_final_total = $paygatedottogateway_bitnovocom_total;
+		$paygatedottogateway_bitnovocom_reference_total = (float)$paygatedottogateway_bitnovocom_final_total;
 		} else {
 		
-$highriskshopgateway_bitnovocom_response = wp_remote_get('https://api.highriskshop.com/control/convert.php?value=' . $highriskshopgateway_bitnovocom_total . '&from=' . strtolower($highriskshopgateway_bitnovocom_currency), array('timeout' => 30));
+$paygatedottogateway_bitnovocom_response = wp_remote_get('https://api.paygate.to/control/convert.php?value=' . $paygatedottogateway_bitnovocom_total . '&from=' . strtolower($paygatedottogateway_bitnovocom_currency), array('timeout' => 30));
 
-if (is_wp_error($highriskshopgateway_bitnovocom_response)) {
+if (is_wp_error($paygatedottogateway_bitnovocom_response)) {
     // Handle error
     wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to failed currency conversion process, please try again', 'instant-approval-payment-gateway'), 'error');
     return null;
 } else {
 
-$highriskshopgateway_bitnovocom_body = wp_remote_retrieve_body($highriskshopgateway_bitnovocom_response);
-$highriskshopgateway_bitnovocom_conversion_resp = json_decode($highriskshopgateway_bitnovocom_body, true);
+$paygatedottogateway_bitnovocom_body = wp_remote_retrieve_body($paygatedottogateway_bitnovocom_response);
+$paygatedottogateway_bitnovocom_conversion_resp = json_decode($paygatedottogateway_bitnovocom_body, true);
 
-if ($highriskshopgateway_bitnovocom_conversion_resp && isset($highriskshopgateway_bitnovocom_conversion_resp['value_coin'])) {
+if ($paygatedottogateway_bitnovocom_conversion_resp && isset($paygatedottogateway_bitnovocom_conversion_resp['value_coin'])) {
     // Escape output
-    $highriskshopgateway_bitnovocom_final_total	= sanitize_text_field($highriskshopgateway_bitnovocom_conversion_resp['value_coin']);
-    $highriskshopgateway_bitnovocom_reference_total = (float)$highriskshopgateway_bitnovocom_final_total;	
+    $paygatedottogateway_bitnovocom_final_total	= sanitize_text_field($paygatedottogateway_bitnovocom_conversion_resp['value_coin']);
+    $paygatedottogateway_bitnovocom_reference_total = (float)$paygatedottogateway_bitnovocom_final_total;	
 } else {
     wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (unsupported store currency)', 'instant-approval-payment-gateway'), 'error');
     return null;
 }	
 		}
 		}
-$highriskshopgateway_bitnovocom_gen_wallet = wp_remote_get('https://api.highriskshop.com/control/wallet.php?address=' . $this->bitnovocom_wallet_address .'&callback=' . urlencode($highriskshopgateway_bitnovocom_callback), array('timeout' => 30));
+$paygatedottogateway_bitnovocom_gen_wallet = wp_remote_get('https://api.paygate.to/control/wallet.php?address=' . $this->bitnovocom_wallet_address .'&callback=' . urlencode($paygatedottogateway_bitnovocom_callback), array('timeout' => 30));
 
-if (is_wp_error($highriskshopgateway_bitnovocom_gen_wallet)) {
+if (is_wp_error($paygatedottogateway_bitnovocom_gen_wallet)) {
     // Handle error
     wc_add_notice(__('Wallet error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to incorrect payout wallet settings, please contact website admin', 'instant-approval-payment-gateway'), 'error');
     return null;
 } else {
-	$highriskshopgateway_bitnovocom_wallet_body = wp_remote_retrieve_body($highriskshopgateway_bitnovocom_gen_wallet);
-	$highriskshopgateway_bitnovocom_wallet_decbody = json_decode($highriskshopgateway_bitnovocom_wallet_body, true);
+	$paygatedottogateway_bitnovocom_wallet_body = wp_remote_retrieve_body($paygatedottogateway_bitnovocom_gen_wallet);
+	$paygatedottogateway_bitnovocom_wallet_decbody = json_decode($paygatedottogateway_bitnovocom_wallet_body, true);
 
  // Check if decoding was successful
-    if ($highriskshopgateway_bitnovocom_wallet_decbody && isset($highriskshopgateway_bitnovocom_wallet_decbody['address_in'])) {
+    if ($paygatedottogateway_bitnovocom_wallet_decbody && isset($paygatedottogateway_bitnovocom_wallet_decbody['address_in'])) {
         // Store the address_in as a variable
-        $highriskshopgateway_bitnovocom_gen_addressIn = wp_kses_post($highriskshopgateway_bitnovocom_wallet_decbody['address_in']);
-        $highriskshopgateway_bitnovocom_gen_polygon_addressIn = sanitize_text_field($highriskshopgateway_bitnovocom_wallet_decbody['polygon_address_in']);
-		$highriskshopgateway_bitnovocom_gen_callback = sanitize_url($highriskshopgateway_bitnovocom_wallet_decbody['callback_url']);
+        $paygatedottogateway_bitnovocom_gen_addressIn = wp_kses_post($paygatedottogateway_bitnovocom_wallet_decbody['address_in']);
+        $paygatedottogateway_bitnovocom_gen_polygon_addressIn = sanitize_text_field($paygatedottogateway_bitnovocom_wallet_decbody['polygon_address_in']);
+		$paygatedottogateway_bitnovocom_gen_callback = sanitize_url($paygatedottogateway_bitnovocom_wallet_decbody['callback_url']);
 		// Save $bitnovocomresponse in order meta data
-    $order->add_meta_data('highriskshop_bitnovocom_tracking_address', $highriskshopgateway_bitnovocom_gen_addressIn, true);
-    $order->add_meta_data('highriskshop_bitnovocom_polygon_temporary_order_wallet_address', $highriskshopgateway_bitnovocom_gen_polygon_addressIn, true);
-    $order->add_meta_data('highriskshop_bitnovocom_callback', $highriskshopgateway_bitnovocom_gen_callback, true);
-	$order->add_meta_data('highriskshop_bitnovocom_converted_amount', $highriskshopgateway_bitnovocom_final_total, true);
-	$order->add_meta_data('highriskshop_bitnovocom_expected_amount', $highriskshopgateway_bitnovocom_reference_total, true);
-	$order->add_meta_data('highriskshop_bitnovocom_nonce', $highriskshopgateway_bitnovocom_nonce, true);
+    $order->add_meta_data('paygatedotto_bitnovocom_tracking_address', $paygatedottogateway_bitnovocom_gen_addressIn, true);
+    $order->add_meta_data('paygatedotto_bitnovocom_polygon_temporary_order_wallet_address', $paygatedottogateway_bitnovocom_gen_polygon_addressIn, true);
+    $order->add_meta_data('paygatedotto_bitnovocom_callback', $paygatedottogateway_bitnovocom_gen_callback, true);
+	$order->add_meta_data('paygatedotto_bitnovocom_converted_amount', $paygatedottogateway_bitnovocom_final_total, true);
+	$order->add_meta_data('paygatedotto_bitnovocom_expected_amount', $paygatedottogateway_bitnovocom_reference_total, true);
+	$order->add_meta_data('paygatedotto_bitnovocom_nonce', $paygatedottogateway_bitnovocom_nonce, true);
     $order->save();
     } else {
         wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (wallet address error)', 'instant-approval-payment-gateway'), 'error');
@@ -157,7 +157,7 @@ if (is_wp_error($highriskshopgateway_bitnovocom_gen_wallet)) {
 }
 
 // Check if the Checkout page is using Checkout Blocks
-if (highriskshopgateway_is_checkout_block()) {
+if (paygatedottogateway_is_checkout_block()) {
     global $woocommerce;
 	$woocommerce->cart->empty_cart();
 }
@@ -165,37 +165,37 @@ if (highriskshopgateway_is_checkout_block()) {
         // Redirect to payment page
         return array(
             'result'   => 'success',
-            'redirect' => 'https://pay.highriskshop.com/process-payment.php?address=' . $highriskshopgateway_bitnovocom_gen_addressIn . '&amount=' . (float)$highriskshopgateway_bitnovocom_final_total . '&provider=bitnovo&email=' . $highriskshopgateway_bitnovocom_email . '&currency=' . $highriskshopgateway_bitnovocom_currency,
+            'redirect' => 'https://checkout.paygate.to/process-payment.php?address=' . $paygatedottogateway_bitnovocom_gen_addressIn . '&amount=' . (float)$paygatedottogateway_bitnovocom_final_total . '&provider=bitnovo&email=' . $paygatedottogateway_bitnovocom_email . '&currency=' . $paygatedottogateway_bitnovocom_currency,
         );
     }
 
 }
 
-function highriskshop_add_instant_payment_gateway_bitnovocom($gateways) {
-    $gateways[] = 'HighRiskShop_Instant_Payment_Gateway_Bitnovo';
+function paygatedotto_add_instant_payment_gateway_bitnovocom($gateways) {
+    $gateways[] = 'PayGateDotTo_Instant_Payment_Gateway_Bitnovo';
     return $gateways;
 }
-add_filter('woocommerce_payment_gateways', 'highriskshop_add_instant_payment_gateway_bitnovocom');
+add_filter('woocommerce_payment_gateways', 'paygatedotto_add_instant_payment_gateway_bitnovocom');
 }
 
 // Add custom endpoint for changing order status
-function highriskshopgateway_bitnovocom_change_order_status_rest_endpoint() {
+function paygatedottogateway_bitnovocom_change_order_status_rest_endpoint() {
     // Register custom route
-    register_rest_route( 'highriskshopgateway/v1', '/highriskshopgateway-bitnovocom/', array(
+    register_rest_route( 'paygatedottogateway/v1', '/paygatedottogateway-bitnovocom/', array(
         'methods'  => 'GET',
-        'callback' => 'highriskshopgateway_bitnovocom_change_order_status_callback',
+        'callback' => 'paygatedottogateway_bitnovocom_change_order_status_callback',
         'permission_callback' => '__return_true',
     ));
 }
-add_action( 'rest_api_init', 'highriskshopgateway_bitnovocom_change_order_status_rest_endpoint' );
+add_action( 'rest_api_init', 'paygatedottogateway_bitnovocom_change_order_status_rest_endpoint' );
 
 // Callback function to change order status
-function highriskshopgateway_bitnovocom_change_order_status_callback( $request ) {
+function paygatedottogateway_bitnovocom_change_order_status_callback( $request ) {
     $order_id = absint($request->get_param( 'order_id' ));
-	$highriskshopgateway_bitnovocomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
-	$highriskshopgateway_bitnovocompaid_txid_out = sanitize_text_field($request->get_param('txid_out'));
-	$highriskshopgateway_bitnovocompaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
-	$highriskshopgateway_bitnovocomfloatpaid_value_coin = (float)$highriskshopgateway_bitnovocompaid_value_coin;
+	$paygatedottogateway_bitnovocomgetnonce = sanitize_text_field($request->get_param( 'nonce' ));
+	$paygatedottogateway_bitnovocompaid_txid_out = sanitize_text_field($request->get_param('txid_out'));
+	$paygatedottogateway_bitnovocompaid_value_coin = sanitize_text_field($request->get_param('value_coin'));
+	$paygatedottogateway_bitnovocomfloatpaid_value_coin = (float)$paygatedottogateway_bitnovocompaid_value_coin;
 
     // Check if order ID parameter exists
     if ( empty( $order_id ) ) {
@@ -211,19 +211,19 @@ function highriskshopgateway_bitnovocom_change_order_status_callback( $request )
     }
 	
 	// Verify nonce
-    if ( empty( $highriskshopgateway_bitnovocomgetnonce ) || $order->get_meta('highriskshop_bitnovocom_nonce', true) !== $highriskshopgateway_bitnovocomgetnonce ) {
+    if ( empty( $paygatedottogateway_bitnovocomgetnonce ) || $order->get_meta('paygatedotto_bitnovocom_nonce', true) !== $paygatedottogateway_bitnovocomgetnonce ) {
         return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'instant-approval-payment-gateway' ), array( 'status' => 403 ) );
     }
 
-    // Check if the order is pending and payment method is 'highriskshop-instant-payment-gateway-bitnovo'
-    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'highriskshop-instant-payment-gateway-bitnovo' === $order->get_payment_method() ) {
-	$highriskshopgateway_bitnovocomexpected_amount = (float)$order->get_meta('highriskshop_bitnovocom_expected_amount', true);
-	$highriskshopgateway_bitnovocomthreshold = 0.60 * $highriskshopgateway_bitnovocomexpected_amount;
-		if ( $highriskshopgateway_bitnovocomfloatpaid_value_coin < $highriskshopgateway_bitnovocomthreshold ) {
+    // Check if the order is pending and payment method is 'paygatedotto-instant-payment-gateway-bitnovo'
+    if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'paygatedotto-instant-payment-gateway-bitnovo' === $order->get_payment_method() ) {
+	$paygatedottogateway_bitnovocomexpected_amount = (float)$order->get_meta('paygatedotto_bitnovocom_expected_amount', true);
+	$paygatedottogateway_bitnovocomthreshold = 0.60 * $paygatedottogateway_bitnovocomexpected_amount;
+		if ( $paygatedottogateway_bitnovocomfloatpaid_value_coin < $paygatedottogateway_bitnovocomthreshold ) {
 			// Mark the order as failed and add an order note
             $order->update_status('failed', __( 'Payment received is less than 60% of the order total. Customer may have changed the payment values on the checkout page.', 'instant-approval-payment-gateway' ));
             /* translators: 1: Transaction ID */
-            $order->add_order_note(sprintf( __( 'Order marked as failed: Payment received is less than 60%% of the order total. Customer may have changed the payment values on the checkout page. TXID: %1$s', 'instant-approval-payment-gateway' ), $highriskshopgateway_bitnovocompaid_txid_out));
+            $order->add_order_note(sprintf( __( 'Order marked as failed: Payment received is less than 60%% of the order total. Customer may have changed the payment values on the checkout page. TXID: %1$s', 'instant-approval-payment-gateway' ), $paygatedottogateway_bitnovocompaid_txid_out));
             return array( 'message' => 'Order status changed to failed due to partial payment.' );
 			
 		} else {
@@ -231,7 +231,7 @@ function highriskshopgateway_bitnovocom_change_order_status_callback( $request )
 		$order->payment_complete();
         $order->update_status( 'processing' );
 		/* translators: 1: Transaction ID */
-		$order->add_order_note( sprintf(__('Payment completed by the provider TXID: %1$s', 'instant-approval-payment-gateway'), $highriskshopgateway_bitnovocompaid_txid_out) );
+		$order->add_order_note( sprintf(__('Payment completed by the provider TXID: %1$s', 'instant-approval-payment-gateway'), $paygatedottogateway_bitnovocompaid_txid_out) );
         // Return success response
         return array( 'message' => 'Order status changed to processing.' );
 		}
