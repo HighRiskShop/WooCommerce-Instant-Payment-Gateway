@@ -13,6 +13,9 @@ function init_paygatedottogateway_upi_gateway() {
 
 class PayGateDotTo_Instant_Payment_Gateway_Upi extends WC_Payment_Gateway {
 
+    protected $icon_url;
+    protected $upiimps_wallet_address;
+
     public function __construct() {
         $this->id                 = 'paygatedotto-instant-payment-gateway-upi';
         $this->icon = sanitize_url($this->get_option('icon_url'));
@@ -176,6 +179,9 @@ if (paygatedottogateway_is_checkout_block()) {
         );
     }
 
+public function paygatedotto_instant_payment_gateway_get_icon_url() {
+        return !empty($this->icon_url) ? esc_url($this->icon_url) : '';
+    }
 }
 
 function paygatedotto_add_instant_payment_gateway_upi($gateways) {
