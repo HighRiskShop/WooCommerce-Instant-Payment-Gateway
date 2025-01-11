@@ -197,11 +197,10 @@ function paygatedottogateway_moonpaycom_change_order_status_callback( $request )
     if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'paygatedotto-instant-payment-gateway-moonpay' === $order->get_payment_method() ) {
         // Change order status to processing
 		$order->payment_complete();
-        $order->update_status( 'processing' );
 		/* translators: 1: Transaction ID */
 		$order->add_order_note( sprintf(__('Payment completed by the provider TXID: %1$s', 'instant-approval-payment-gateway'), $paygatedottogateway_moonpaycompaid_txid_out) );
         // Return success response
-        return array( 'message' => 'Order status changed to processing.' );
+        return array( 'message' => 'Order marked as paid and status changed.' );
     } else {
         // Return error response if conditions are not met
         return new WP_Error( 'order_not_eligible', __( 'Order is not eligible for status change.', 'instant-approval-payment-gateway' ), array( 'status' => 400 ) );

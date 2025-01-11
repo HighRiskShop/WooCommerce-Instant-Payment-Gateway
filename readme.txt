@@ -4,10 +4,10 @@ Donate link: https://paygate.to/
 Tags: woocommerce,payment,instant,gateway
 Requires at least: 5.8
 Tested up to: 6.7.1
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 Requires PHP: 7.2
 WC requires at least: 5.8
-WC tested up to: 9.5.1
+WC tested up to: 9.5.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -82,7 +82,11 @@ Anyone can use our payment plugin instantly without providing any information. H
 
 == Changelog ==
 
-= V1.1.3 =
+= V1.1.5 =
+
+* Fix processing order status bug for virtual downloadable products.
+
+= V1.1.4 =
 
 * Fix deprecated dynamic property PHP 8.2
 
