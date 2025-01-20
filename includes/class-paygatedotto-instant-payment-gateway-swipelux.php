@@ -20,7 +20,7 @@ class PayGateDotTo_Instant_Payment_Gateway_Swipelux extends WC_Payment_Gateway {
         $this->id                 = 'paygatedotto-instant-payment-gateway-swipelux';
         $this->icon = sanitize_url($this->get_option('icon_url'));
         $this->method_title       = esc_html__('Instant Approval Payment Gateway with Instant Payouts (swipelux.com)', 'instant-approval-payment-gateway'); // Escaping title
-        $this->method_description = esc_html__('Instant Approval High Risk Merchant Gateway with instant payouts to your USDC POLYGON wallet using swipelux.com infrastructure', 'instant-approval-payment-gateway'); // Escaping description
+        $this->method_description = esc_html__('Instant Approval High Risk Merchant Gateway with instant payouts to your USDT POLYGON wallet using swipelux.com infrastructure', 'instant-approval-payment-gateway'); // Escaping description
         $this->has_fields         = false;
 
         $this->init_form_fields();
@@ -61,7 +61,7 @@ class PayGateDotTo_Instant_Payment_Gateway_Swipelux extends WC_Payment_Gateway {
             'swipeluxcom_wallet_address' => array(
                 'title'       => esc_html__('Wallet Address', 'instant-approval-payment-gateway'), // Escaping title
                 'type'        => 'text',
-                'description' => esc_html__('Insert your USDC (Polygon) wallet address to receive instant payouts.', 'instant-approval-payment-gateway'), // Escaping description
+                'description' => esc_html__('Insert your USDT (Polygon) wallet address to receive instant payouts.', 'instant-approval-payment-gateway'), // Escaping description
                 'desc_tip'    => true,
             ),
             'icon_url' => array(
@@ -82,13 +82,13 @@ class PayGateDotTo_Instant_Payment_Gateway_Swipelux extends WC_Payment_Gateway {
 
         // Check if wallet address starts with "0x"
         if (substr($swipeluxcom_admin_wallet_address, 0, 2) !== '0x') {
-            WC_Admin_Settings::add_error(__('Invalid Wallet Address: Please insert your USDC Polygon wallet address.', 'instant-approval-payment-gateway'));
+            WC_Admin_Settings::add_error(__('Invalid Wallet Address: Please insert your USDT Polygon wallet address.', 'instant-approval-payment-gateway'));
             return false;
         }
 
-        // Check if wallet address matches the USDC contract address
-        if (strtolower($swipeluxcom_admin_wallet_address) === '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359') {
-            WC_Admin_Settings::add_error(__('Invalid Wallet Address: Please insert your USDC Polygon wallet address.', 'instant-approval-payment-gateway'));
+        // Check if wallet address matches the USDT contract address
+        if (strtolower($swipeluxcom_admin_wallet_address) === '0xc2132d05d31c914a87c6611c10748aeb04b58e8f') {
+            WC_Admin_Settings::add_error(__('Invalid Wallet Address: Please insert your USDT Polygon wallet address.', 'instant-approval-payment-gateway'));
             return false;
         }
 
