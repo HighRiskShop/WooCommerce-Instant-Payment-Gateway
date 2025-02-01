@@ -61,7 +61,7 @@ class PayGateDotTo_Instant_Payment_Gateway_Interac extends WC_Payment_Gateway {
             'interaccad_wallet_address' => array(
                 'title'       => esc_html__('Wallet Address', 'instant-approval-payment-gateway'), // Escaping title
                 'type'        => 'text',
-                'description' => esc_html__('Insert your USDC (Polygon) wallet address to receive instant payouts.', 'instant-approval-payment-gateway'), // Escaping description
+                'description' => esc_html__('Insert your USDC (Polygon) wallet address to receive instant payouts. Payouts maybe sent in USDC or USDT (Polygon or BEP-20) or POL native token. Same wallet should work to receive all. Make sure you use a self-custodial wallet to receive payouts.', 'instant-approval-payment-gateway'), // Escaping description
                 'desc_tip'    => true,
             ),
             'icon_url' => array(
@@ -108,16 +108,19 @@ class PayGateDotTo_Instant_Payment_Gateway_Interac extends WC_Payment_Gateway {
     if ($paygatedottogateway_interaccad_currency !== 'CAD') {
 		
 	// Handle error
-    wc_add_notice(__('Currency error:', 'instant-approval-payment-gateway') . __('Payment could not be processed Store currency must be CAD', 'instant-approval-payment-gateway'), 'error');
+    paygatedottogateway_add_notice(__('Currency error:', 'instant-approval-payment-gateway') . __('Payment could not be processed Store currency must be CAD', 'instant-approval-payment-gateway'), 'error');
     return null;	
 		
-	}
+	} elseif ($paygatedottogateway_interaccad_final_total < 100) {
+paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Order total for this payment provider must be CA$100 or more.', 'instant-approval-payment-gateway'), 'error');
+return null;
+}	
 		
 $paygatedottogateway_interaccad_response = wp_remote_get('https://api.paygate.to/control/convert.php?value=' . $paygatedottogateway_interaccad_total . '&from=' . strtolower($paygatedottogateway_interaccad_currency), array('timeout' => 30));
 
 if (is_wp_error($paygatedottogateway_interaccad_response)) {
     // Handle error
-    wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to failed currency conversion process, please try again', 'instant-approval-payment-gateway'), 'error');
+    paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to failed currency conversion process, please try again', 'instant-approval-payment-gateway'), 'error');
     return null;
 } else {
 
@@ -129,7 +132,7 @@ if ($paygatedottogateway_interaccad_conversion_resp && isset($paygatedottogatewa
     $paygatedottogateway_interaccad_finalusd_total	= sanitize_text_field($paygatedottogateway_interaccad_conversion_resp['value_coin']);
     $paygatedottogateway_interaccad_reference_total = (float)$paygatedottogateway_interaccad_finalusd_total;	
 } else {
-    wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (unsupported store currency)', 'instant-approval-payment-gateway'), 'error');
+    paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (unsupported store currency)', 'instant-approval-payment-gateway'), 'error');
     return null;
 }	
 		}
@@ -139,7 +142,7 @@ $paygatedottogateway_interaccad_gen_wallet = wp_remote_get('https://api.paygate.
 
 if (is_wp_error($paygatedottogateway_interaccad_gen_wallet)) {
     // Handle error
-    wc_add_notice(__('Wallet error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to incorrect payout wallet settings, please contact website admin', 'instant-approval-payment-gateway'), 'error');
+    paygatedottogateway_add_notice(__('Wallet error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to incorrect payout wallet settings, please contact website admin', 'instant-approval-payment-gateway'), 'error');
     return null;
 } else {
 	$paygatedottogateway_interaccad_wallet_body = wp_remote_retrieve_body($paygatedottogateway_interaccad_gen_wallet);
@@ -160,7 +163,7 @@ if (is_wp_error($paygatedottogateway_interaccad_gen_wallet)) {
 	$order->add_meta_data('paygatedotto_interaccad_nonce', $paygatedottogateway_interaccad_nonce, true);
     $order->save();
     } else {
-        wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (wallet address error)', 'instant-approval-payment-gateway'), 'error');
+        paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (wallet address error)', 'instant-approval-payment-gateway'), 'error');
 
         return null;
     }

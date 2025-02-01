@@ -61,7 +61,7 @@ class PayGateDotTo_Instant_Payment_Gateway_Simplex extends WC_Payment_Gateway {
             'simplexcom_wallet_address' => array(
                 'title'       => esc_html__('Wallet Address', 'instant-approval-payment-gateway'), // Escaping title
                 'type'        => 'text',
-                'description' => esc_html__('Insert your USDC (Polygon) wallet address to receive instant payouts.', 'instant-approval-payment-gateway'), // Escaping description
+                'description' => esc_html__('Insert your USDC (Polygon) wallet address to receive instant payouts. Payouts maybe sent in USDC or USDT (Polygon or BEP-20) or POL native token. Same wallet should work to receive all. Make sure you use a self-custodial wallet to receive payouts.', 'instant-approval-payment-gateway'), // Escaping description
                 'desc_tip'    => true,
             ),
             'icon_url' => array(
@@ -103,12 +103,43 @@ class PayGateDotTo_Instant_Payment_Gateway_Simplex extends WC_Payment_Gateway {
 		$paygatedottogateway_simplexcom_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $paygatedottogateway_simplexcom_nonce,), rest_url('paygatedottogateway/v1/paygatedottogateway-simplexcom/'));
 		$paygatedottogateway_simplexcom_email = urlencode(sanitize_email($order->get_billing_email()));
 		$paygatedottogateway_simplexcom_final_total = $paygatedottogateway_simplexcom_total;
+		
+if ($paygatedottogateway_simplexcom_currency === 'USD') {
+        $paygatedottogateway_simplexcom_minimumcheck = $paygatedottogateway_simplexcom_total;
+		} else {
+		
+$paygatedottogateway_simplexcom_minimumcheck_response = wp_remote_get('https://api.paygate.to/control/convert.php?value=' . $paygatedottogateway_simplexcom_total . '&from=' . strtolower($paygatedottogateway_simplexcom_currency), array('timeout' => 30));
+
+if (is_wp_error($paygatedottogateway_simplexcom_minimumcheck_response)) {
+    // Handle error
+    paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to failed currency conversion process, please try again', 'instant-approval-payment-gateway'), 'error');
+    return null;
+} else {
+
+$paygatedottogateway_simplexcom_minimumcheck_body = wp_remote_retrieve_body($paygatedottogateway_simplexcom_minimumcheck_response);
+$paygatedottogateway_simplexcom_minimum_conversion_resp = json_decode($paygatedottogateway_simplexcom_minimumcheck_body, true);
+
+if ($paygatedottogateway_simplexcom_minimum_conversion_resp && isset($paygatedottogateway_simplexcom_minimum_conversion_resp['value_coin'])) {
+    // Escape output
+    $paygatedottogateway_simplexcom_minimum_conversion_total	= sanitize_text_field($paygatedottogateway_simplexcom_minimum_conversion_resp['value_coin']);
+    $paygatedottogateway_simplexcom_minimumcheck = (float)$paygatedottogateway_simplexcom_minimum_conversion_total;	
+} else {
+    paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (unsupported store currency)', 'instant-approval-payment-gateway'), 'error');
+    return null;
+}	
+		}
+		}
+		
+if ($paygatedottogateway_simplexcom_minimumcheck < 50) {
+paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Order total for this payment provider must be $50 USD or more.', 'instant-approval-payment-gateway'), 'error');
+return null;
+}		
 	
 $paygatedottogateway_simplexcom_gen_wallet = wp_remote_get('https://api.paygate.to/control/wallet.php?address=' . $this->simplexcom_wallet_address .'&callback=' . urlencode($paygatedottogateway_simplexcom_callback), array('timeout' => 30));
 
 if (is_wp_error($paygatedottogateway_simplexcom_gen_wallet)) {
     // Handle error
-    wc_add_notice(__('Wallet error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to incorrect payout wallet settings, please contact website admin', 'instant-approval-payment-gateway'), 'error');
+    paygatedottogateway_add_notice(__('Wallet error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to incorrect payout wallet settings, please contact website admin', 'instant-approval-payment-gateway'), 'error');
     return null;
 } else {
 	$paygatedottogateway_simplexcom_wallet_body = wp_remote_retrieve_body($paygatedottogateway_simplexcom_gen_wallet);
@@ -128,7 +159,7 @@ if (is_wp_error($paygatedottogateway_simplexcom_gen_wallet)) {
 	$order->add_meta_data('paygatedotto_simplexcom_nonce', $paygatedottogateway_simplexcom_nonce, true);
     $order->save();
     } else {
-        wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (wallet address error)', 'instant-approval-payment-gateway'), 'error');
+        paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (wallet address error)', 'instant-approval-payment-gateway'), 'error');
 
         return null;
     }

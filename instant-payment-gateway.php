@@ -3,11 +3,12 @@
  * Plugin Name: Instant Approval Payment Gateway with Instant Payouts
  * Plugin URI: https://paygate.to/instant-payment-gateway/
  * Description: Instant Approval High Risk Merchant Gateway with instant payouts to your USDC wallet.
- * Version: 1.1.6
+ * Version: 1.1.7
+ * Requires Plugins: woocommerce
  * Requires at least: 5.8
  * Tested up to: 6.7.1
  * WC requires at least: 5.8
- * WC tested up to: 9.5.2
+ * WC tested up to: 9.6.0
  * Requires PHP: 7.2
  * Author: PayGate.to
  * Author URI: https://paygate.to/
@@ -86,6 +87,7 @@ add_action('wp_enqueue_scripts', 'paygatedottogateway_enqueue_styles');
 
     include_once(plugin_dir_path(__FILE__) . 'includes/class-paygatedotto-instant-payment-gateway-hostedpaygatedotto.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-paygatedotto-instant-payment-gateway-wert.php'); // Include the payment gateway class
+	include_once(plugin_dir_path(__FILE__) . 'includes/class-paygatedotto-instant-payment-gateway-werteur.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-paygatedotto-instant-payment-gateway-stripe.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-paygatedotto-instant-payment-gateway-simpleswap.php'); // Include the payment gateway class
 	include_once(plugin_dir_path(__FILE__) . 'includes/class-paygatedotto-instant-payment-gateway-rampnetwork.php'); // Include the payment gateway class
@@ -115,5 +117,19 @@ add_action('wp_enqueue_scripts', 'paygatedottogateway_enqueue_styles');
 function paygatedottogateway_is_checkout_block() {
     return WC_Blocks_Utils::has_block_in_page( wc_get_page_id('checkout'), 'woocommerce/checkout' );
 }
+
+function paygatedottogateway_add_notice($paygatedottogateway_message, $paygatedottogateway_notice_type = 'error') {
+    // Check if the Checkout page is using Checkout Blocks
+    if (paygatedottogateway_is_checkout_block()) {
+        // For blocks, throw a WooCommerce exception
+        if ($paygatedottogateway_notice_type === 'error') {
+            throw new \WC_Data_Exception('checkout_error', esc_html($paygatedottogateway_message)); 
+        }
+        // Handle other notice types if needed
+    } else {
+        // Default WooCommerce behavior
+        wc_add_notice(esc_html($paygatedottogateway_message), $paygatedottogateway_notice_type); 
+    }
+}	
 	
 ?>

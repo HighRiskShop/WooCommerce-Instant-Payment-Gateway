@@ -4,10 +4,10 @@ Donate link: https://paygate.to/
 Tags: woocommerce,payment,instant,gateway
 Requires at least: 5.8
 Tested up to: 6.7.1
-Stable tag: 1.1.6
+Stable tag: 1.1.7
 Requires PHP: 7.2
 WC requires at least: 5.8
-WC tested up to: 9.5.2
+WC tested up to: 9.6.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -15,7 +15,7 @@ Instant Approval High Risk Merchant Gateway with instant payouts to your USDC PO
 
 == Description ==
 
-Powerful plugin for both WooCommerce that allows you to accept payments for your high risk business instantly. You can accept Credit/debit card (including MasterCard, Visa, and Maestro) – Apple Pay – Google Pay – SEPA or local bank transfer. Get paid instantly to your USDC Polygon (MATIC) wallet.
+Powerful plugin for WooCommerce that allows you to accept payments for your high risk business instantly. You can accept Credit/debit card (including MasterCard, Visa, and Maestro) – Apple Pay – Google Pay – SEPA or local bank transfer. Get paid instantly to your USDC Polygon (MATIC) wallet.
 
 === Features ===
 
@@ -81,6 +81,11 @@ Anyone can use our payment plugin instantly without providing any information. H
 2. screenshot-2.png
 
 == Changelog ==
+
+= V1.1.7 =
+
+* Detailed error messages for checkout blocks.
+* Check minimum order amount for each provider.
 
 = V1.1.6 =
 

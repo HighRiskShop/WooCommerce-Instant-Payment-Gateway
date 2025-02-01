@@ -60,7 +60,7 @@ class PayGateDotTo_Instant_Payment_Gateway_Banxa extends WC_Payment_Gateway {
             'banxacom_wallet_address' => array(
                 'title'       => esc_html__('Wallet Address', 'instant-approval-payment-gateway'), // Escaping title
                 'type'        => 'text',
-                'description' => esc_html__('Insert your USDC (Polygon) wallet address to receive instant payouts.', 'instant-approval-payment-gateway'), // Escaping description
+                'description' => esc_html__('Insert your USDC (Polygon) wallet address to receive instant payouts. Payouts maybe sent in USDC or USDT (Polygon or BEP-20) or POL native token. Same wallet should work to receive all. Make sure you use a self-custodial wallet to receive payouts.', 'instant-approval-payment-gateway'), // Escaping description
                 'desc_tip'    => true,
             ),
             'icon_url' => array(
@@ -102,12 +102,43 @@ class PayGateDotTo_Instant_Payment_Gateway_Banxa extends WC_Payment_Gateway {
 		$paygatedottogateway_banxacom_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $paygatedottogateway_banxacom_nonce,), rest_url('paygatedottogateway/v1/paygatedottogateway-banxacom/'));
 		$paygatedottogateway_banxacom_email = urlencode(sanitize_email($order->get_billing_email()));
 		$paygatedottogateway_banxacom_final_total = $paygatedottogateway_banxacom_total;
+
+if ($paygatedottogateway_banxacom_currency === 'USD') {
+        $paygatedottogateway_banxacom_minimumcheck = $paygatedottogateway_banxacom_total;
+		} else {
+		
+$paygatedottogateway_banxacom_minimumcheck_response = wp_remote_get('https://api.paygate.to/control/convert.php?value=' . $paygatedottogateway_banxacom_total . '&from=' . strtolower($paygatedottogateway_banxacom_currency), array('timeout' => 30));
+
+if (is_wp_error($paygatedottogateway_banxacom_minimumcheck_response)) {
+    // Handle error
+    paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to failed currency conversion process, please try again', 'instant-approval-payment-gateway'), 'error');
+    return null;
+} else {
+
+$paygatedottogateway_banxacom_minimumcheck_body = wp_remote_retrieve_body($paygatedottogateway_banxacom_minimumcheck_response);
+$paygatedottogateway_banxacom_minimum_conversion_resp = json_decode($paygatedottogateway_banxacom_minimumcheck_body, true);
+
+if ($paygatedottogateway_banxacom_minimum_conversion_resp && isset($paygatedottogateway_banxacom_minimum_conversion_resp['value_coin'])) {
+    // Escape output
+    $paygatedottogateway_banxacom_minimum_conversion_total	= sanitize_text_field($paygatedottogateway_banxacom_minimum_conversion_resp['value_coin']);
+    $paygatedottogateway_banxacom_minimumcheck = (float)$paygatedottogateway_banxacom_minimum_conversion_total;	
+} else {
+    paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (unsupported store currency)', 'instant-approval-payment-gateway'), 'error');
+    return null;
+}	
+		}
+		}
+		
+if ($paygatedottogateway_banxacom_minimumcheck < 20) {
+paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Order total for this payment provider must be $20 USD or more.', 'instant-approval-payment-gateway'), 'error');
+return null;
+}
 	
 $paygatedottogateway_banxacom_gen_wallet = wp_remote_get('https://api.paygate.to/control/wallet.php?address=' . $this->banxacom_wallet_address .'&callback=' . urlencode($paygatedottogateway_banxacom_callback), array('timeout' => 30));
 
 if (is_wp_error($paygatedottogateway_banxacom_gen_wallet)) {
     // Handle error
-    wc_add_notice(__('Wallet error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to incorrect payout wallet settings, please contact website admin', 'instant-approval-payment-gateway'), 'error');
+    paygatedottogateway_add_notice(__('Wallet error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to incorrect payout wallet settings, please contact website admin', 'instant-approval-payment-gateway'), 'error');
     return null;
 } else {
 	$paygatedottogateway_banxacom_wallet_body = wp_remote_retrieve_body($paygatedottogateway_banxacom_gen_wallet);
@@ -127,7 +158,7 @@ if (is_wp_error($paygatedottogateway_banxacom_gen_wallet)) {
 	$order->add_meta_data('paygatedotto_banxacom_nonce', $paygatedottogateway_banxacom_nonce, true);
     $order->save();
     } else {
-        wc_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (wallet address error)', 'instant-approval-payment-gateway'), 'error');
+        paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (wallet address error)', 'instant-approval-payment-gateway'), 'error');
 
         return null;
     }
