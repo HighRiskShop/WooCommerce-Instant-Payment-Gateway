@@ -102,16 +102,39 @@ class PayGateDotTo_Instant_Payment_Gateway_Werteur extends WC_Payment_Gateway {
 		$paygatedottogateway_werteur_nonce = wp_create_nonce( 'paygatedottogateway_werteur_nonce_' . $order_id );
 		$paygatedottogateway_werteur_callback = add_query_arg(array('order_id' => $order_id, 'nonce' => $paygatedottogateway_werteur_nonce,), rest_url('paygatedottogateway/v1/paygatedottogateway-werteur/'));
 		$paygatedottogateway_werteur_email = urlencode(sanitize_email($order->get_billing_email()));
-		$paygatedottogateway_werteur_final_total = $paygatedottogateway_werteur_total;
 		
 		 // If the currency is not EUR
-    if ($paygatedottogateway_werteur_currency !== 'EUR') {
+if ($paygatedottogateway_werteur_currency === 'EUR') {
+        $paygatedottogateway_werteur_final_total = $paygatedottogateway_werteur_total;
+		$paygatedottogateway_werteur_payment_final_total = (float)$paygatedottogateway_werteur_final_total;
+		} else {
 		
-	// Handle error
-    paygatedottogateway_add_notice(__('Currency error:', 'instant-approval-payment-gateway') . __('Payment could not be processed Store currency must be EUR', 'instant-approval-payment-gateway'), 'error');
-    return null;	
-		
-	}
+$paygatedottogateway_werteur_response = wp_remote_get('https://api.paygate.to/crypto/erc20/eurc/convert.php?value=' . $paygatedottogateway_werteur_total . '&from=' . strtolower($paygatedottogateway_werteur_currency), array('timeout' => 30));
+
+if (is_wp_error($paygatedottogateway_werteur_response)) {
+    // Handle error
+    paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed due to failed currency conversion process, please try again', 'instant-approval-payment-gateway'), 'error');
+    return null;
+} else {
+
+$paygatedottogateway_werteur_body = wp_remote_retrieve_body($paygatedottogateway_werteur_response);
+$paygatedottogateway_werteur_conversion_resp = json_decode($paygatedottogateway_werteur_body, true);
+
+if ($paygatedottogateway_werteur_conversion_resp && isset($paygatedottogateway_werteur_conversion_resp['value_coin'])) {
+    // Escape output
+    $paygatedottogateway_werteur_final_total	= sanitize_text_field($paygatedottogateway_werteur_conversion_resp['value_coin']);
+    $paygatedottogateway_werteur_payment_final_total = (float)$paygatedottogateway_werteur_final_total;	
+} else {
+    paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Payment could not be processed, please try again (unsupported store currency)', 'instant-approval-payment-gateway'), 'error');
+    return null;
+}	
+		}
+		}
+	
+	if ($paygatedottogateway_werteur_payment_final_total < 1) {
+paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Order total for this payment provider must be €1 or more.', 'instant-approval-payment-gateway'), 'error');
+return null;
+}	
 		
 $paygatedottogateway_werteur_response = wp_remote_get('https://api.paygate.to/control/convert.php?value=' . $paygatedottogateway_werteur_total . '&from=' . strtolower($paygatedottogateway_werteur_currency), array('timeout' => 30));
 
@@ -155,7 +178,7 @@ if (is_wp_error($paygatedottogateway_werteur_gen_wallet)) {
     $order->add_meta_data('paygatedotto_werteur_tracking_address', $paygatedottogateway_werteur_gen_addressIn, true);
     $order->add_meta_data('paygatedotto_werteur_polygon_temporary_order_wallet_address', $paygatedottogateway_werteur_gen_polygon_addressIn, true);
     $order->add_meta_data('paygatedotto_werteur_callback', $paygatedottogateway_werteur_gen_callback, true);
-	$order->add_meta_data('paygatedotto_werteur_converted_amount', $paygatedottogateway_werteur_final_total, true);
+	$order->add_meta_data('paygatedotto_werteur_converted_amount', $paygatedottogateway_werteur_payment_final_total, true);
 	$order->add_meta_data('paygatedotto_werteur_expected_amount', $paygatedottogateway_werteur_reference_total, true);
 	$order->add_meta_data('paygatedotto_werteur_nonce', $paygatedottogateway_werteur_nonce, true);
     $order->save();
@@ -175,7 +198,7 @@ if (paygatedottogateway_is_checkout_block()) {
         // Redirect to payment page
         return array(
             'result'   => 'success',
-            'redirect' => 'https://checkout.paygate.to/process-payment.php?address=' . $paygatedottogateway_werteur_gen_addressIn . '&amount=' . (float)$paygatedottogateway_werteur_final_total . '&provider=werteur&email=' . $paygatedottogateway_werteur_email . '&currency=' . $paygatedottogateway_werteur_currency,
+            'redirect' => 'https://checkout.paygate.to/process-payment.php?address=' . $paygatedottogateway_werteur_gen_addressIn . '&amount=' . (float)$paygatedottogateway_werteur_payment_final_total . '&provider=werteur&email=' . $paygatedottogateway_werteur_email . '&currency=' . $paygatedottogateway_werteur_currency,
         );
     }
 
@@ -231,12 +254,12 @@ function paygatedottogateway_werteur_change_order_status_callback( $request ) {
     // Check if the order is pending and payment method is 'paygatedotto-instant-payment-gateway-werteur'
     if ( $order && $order->get_status() !== 'processing' && $order->get_status() !== 'completed' && 'paygatedotto-instant-payment-gateway-werteur' === $order->get_payment_method() ) {
 	$paygatedottogateway_werteurexpected_amount = (float)$order->get_meta('paygatedotto_werteur_expected_amount', true);
-	$paygatedottogateway_werteurthreshold = 0.50 * $paygatedottogateway_werteurexpected_amount;
+	$paygatedottogateway_werteurthreshold = 0.60 * $paygatedottogateway_werteurexpected_amount;
 		if ( $paygatedottogateway_werteurfloatpaid_value_coin < $paygatedottogateway_werteurthreshold ) {
 			// Mark the order as failed and add an order note
-            $order->update_status('failed', __( 'Payment received is less than 50% of the order total. Customer may have changed the payment values on the checkout page.', 'instant-approval-payment-gateway' ));
+            $order->update_status('failed', __( 'Payment received is less than 60% of the order total. Customer may have changed the payment values on the checkout page.', 'instant-approval-payment-gateway' ));
 			/* translators: 1: Transaction ID */
-            $order->add_order_note(sprintf( __( 'Order marked as failed: Payment received is less than 50%% of the order total. Customer may have changed the payment values on the checkout page. TXID: %1$s', 'instant-approval-payment-gateway' ), $paygatedottogateway_werteurpaid_txid_out));
+            $order->add_order_note(sprintf( __( 'Order marked as failed: Payment received is less than 60%% of the order total. Customer may have changed the payment values on the checkout page. TXID: %1$s', 'instant-approval-payment-gateway' ), $paygatedottogateway_werteurpaid_txid_out));
             return array( 'message' => 'Order status changed to failed due to partial payment.' );
 			
 		} else {

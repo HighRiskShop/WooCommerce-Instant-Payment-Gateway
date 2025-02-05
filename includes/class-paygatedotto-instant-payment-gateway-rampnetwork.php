@@ -129,8 +129,8 @@ if ($paygatedottogateway_rampnetwork_conversion_resp && isset($paygatedottogatew
 		}
 		}
 	
-if ($paygatedottogateway_rampnetwork_reference_total < 5) {
-paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Order total for this payment provider must be $5 USD or more.', 'instant-approval-payment-gateway'), 'error');
+if ($paygatedottogateway_rampnetwork_reference_total < 4) {
+paygatedottogateway_add_notice(__('Payment error:', 'instant-approval-payment-gateway') . __('Order total for this payment provider must be $4 USD or more.', 'instant-approval-payment-gateway'), 'error');
 return null;
 }
 	
